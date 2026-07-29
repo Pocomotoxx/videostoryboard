@@ -1,0 +1,16 @@
+{
+  "name": "videostoryboard",
+  "owner": {
+    "name": "Pocomotoxx"
+  },
+  "metadata": {
+    "description": "AI-videógyártó pluginok: storyboardtól a kész vágásig, jóváhagyási kapukkal és költségkontrollal."
+  },
+  "plugins": [
+    {
+      "name": "higgsfield-storyboard",
+      "source": "./plugins/higgsfield-storyboard",
+      "description": "Rétegelt, jóváhagyáskapus AI-videógyártás Higgsfield MCP-vel, brieftől a kész vágásig."
+    }
+  ]
+}

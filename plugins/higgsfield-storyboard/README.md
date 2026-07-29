@@ -1,0 +1,29 @@
+# higgsfield-storyboard
+
+Rétegelt, jóváhagyáskapus AI-videógyártó folyamat. A működés teljes leírása a `SKILL.md`
+fájlban van — Claude Code azt olvassa be, amikor a skill elindul.
+
+Telepítés és előfeltételek: a repó gyökerében lévő `README.md`.
+
+## Szerkezet
+
+```
+SKILL.md                            # a folyamat leírása, a skill belépőpontja
+.claude-plugin/plugin.json          # plugin-manifest
+scripts/project.py                  # rétegek állapotgépe, jóváhagyás- és költségkapu
+scripts/assemble.py                 # helyi összefűzés ffmpeggel
+references/shot-grammar.md          # gépállás, szög, kameramozgás, promptszerkezet
+references/continuity.md            # karakter- és stílusfolytonosság
+templates/storyboard.example.json   # a storyboard.json szerkezete, kitöltött mintával
+```
+
+Ez a mappa csak a tudást tartalmazza. A konkrét munkák a `project.py init <nev>`
+paranccsal a saját munkakönyvtáradban keletkeznek (`brief.md`, `treatment.md`,
+`storyboard.json`, `project.json`, valamint `characters/`, `shots/`, `output/`,
+`delivery/` mappák).
+
+## A scriptek elérése
+
+A `SKILL.md` parancsai `${CLAUDE_PLUGIN_ROOT}`-tal hivatkoznak a scriptekre, mert
+telepítéskor a plugin a Claude Code gyorsítótárába másolódik, és ott a relatív
+útvonal már nem a plugin mappájára mutatna.

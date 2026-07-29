@@ -7,6 +7,12 @@ description: Rétegelt, jóváhagyáskapus AI-videógyártás Higgsfield MCP-vel
 
 Rétegelt gyártási folyamat AI-videóhoz. Minden réteg egy jóváhagyási kapu. Kreditet csak jóváhagyott előzményre költünk.
 
+## Környezet
+
+A parancsokat mindig a projekt könyvtárából futtasd, mert a scriptek alapértelmezésben az aktuális könyvtárat tekintik projektnek. A `${CLAUDE_PLUGIN_ROOT}` a plugin telepítési helyére mutat, ezt ne írd át kézzel.
+
+Windowson a `python3` egy nem működő Microsoft Store-alias, ezért ott a `python` parancsot használd a `python3` helyett. Az `assemble.py` futtatásához ffmpeg kell (macOS: `brew install ffmpeg`).
+
 ## Alapelv
 
 A generálás nem determinisztikus, a modell nem tudja megítélni a saját eredményét, és minden újrafuttatás pénzbe kerül. Ezért a folyamat nem egy hosszú automatikus lánc, hanem rövid szakaszok sora, mindegyik végén emberi döntéssel. A drága lépés mindig egy már elfogadott olcsó lépésből nő ki.
@@ -14,7 +20,7 @@ A generálás nem determinisztikus, a modell nem tudja megítélni a saját ered
 **Kötelező szabály.** Bármilyen generáló MCP-hívás előtt le kell futtatni:
 
 ```bash
-python scripts/project.py can-spend <node-id>
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" can-spend <node-id>
 ```
 
 Ha ez nem nulla kilépési kóddal tér vissza, a hívás tilos. Nincs kivétel, nincs „gyorsan kipróbálom". Ez a szabály a rendszer lényege.
@@ -44,8 +50,8 @@ A `project.py` build-rendszerként kezeli a projektet. Minden node tárolja a be
 ### Indulás
 
 ```bash
-python scripts/project.py init "ugyfel-projektnev"
-python scripts/project.py status
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" init "ugyfel-projektnev"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" status
 ```
 
 Ha félbeszakadt munkamenetet folytatsz, mindig `status` és `next` hívással kezdj. Az igazság a `project.json`-ban van, nem a beszélgetésben.
@@ -55,10 +61,10 @@ Ha félbeszakadt munkamenetet folytatsz, mindig `status` és `next` hívással k
 A Higgsfield MCP eszközkészlete változik, ezért ne dolgozz beégetett eszköznevekkel. Az első futásnál nézd meg a ténylegesen elérhető eszközöket, és rögzítsd a szerepkör-hozzárendelést:
 
 ```bash
-python scripts/project.py set-tool image_gen "<eszköznév>"
-python scripts/project.py set-tool image_to_video "<eszköznév>"
-python scripts/project.py set-tool character_train "<eszköznév>"
-python scripts/project.py set-tool upscale "<eszköznév>"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" set-tool image_gen "<eszköznév>"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" set-tool image_to_video "<eszköznév>"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" set-tool character_train "<eszköznév>"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" set-tool upscale "<eszköznév>"
 ```
 
 Szükséges szerepkörök: `image_gen`, `image_to_video`, `character_train`, `upscale`, `history`. Ha valamelyikhez nincs eszköz, jelezd a felhasználónak, és tervezd meg a kerülőutat, ne találj ki eszköznevet.
@@ -70,8 +76,8 @@ Mindig a `next` mondja meg, mi jön. Egy réteg befejezése után **állj meg, �
 Jóváhagyás rögzítése:
 
 ```bash
-python scripts/project.py approve keyframe:s003
-python scripts/project.py reject keyframe:s003 --note "a kabát gombos lett, sima kell"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" approve keyframe:s003
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" reject keyframe:s003 --note "a kabát gombos lett, sima kell"
 ```
 
 ### Jelenetlista
@@ -89,7 +95,7 @@ Karakter- és stílusfolytonosságról a `references/continuity.md` szól. Ezt a
 Generálás előtt mindig:
 
 ```bash
-python scripts/project.py estimate
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" estimate
 ```
 
 A becslést mutasd meg a felhasználónak, mielőtt az 5. rétegbe lépnél. Az elköltött kreditet a `project.py spend` rögzíti, az `report` pedig kiírja a projekt tényleges költségét, ami ügyfélszámlázáshoz kell.
@@ -97,9 +103,9 @@ A becslést mutasd meg a felhasználónak, mielőtt az 5. rétegbe lépnél. Az 
 ### Összefűzés
 
 ```bash
-python scripts/project.py check-assembly
-python scripts/assemble.py --project . --aspect 16:9
-python scripts/assemble.py --project . --aspect 9:16
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" check-assembly
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/assemble.py" --project . --aspect 16:9
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/assemble.py" --project . --aspect 9:16
 ```
 
 Az összefűzés helyben fut ffmpeggel, nem az MCP-n keresztül. A `check-assembly` ellenőrzi, hogy minden jelenet jóváhagyott és letöltött állapotban van-e.

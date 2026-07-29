@@ -1,0 +1,10 @@
+# Egységes LF sorvég minden szöveges fájlban, hogy a Windows és a macOS
+# közötti oda-vissza dolgozás ne termeljen látszólagos módosításokat.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.mp4 binary
+*.mov binary
+*.wav binary
+*.mp3 binary

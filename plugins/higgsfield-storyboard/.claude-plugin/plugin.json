@@ -1,0 +1,10 @@
+{
+  "name": "higgsfield-storyboard",
+  "description": "Rétegelt, jóváhagyáskapus AI-videógyártás Higgsfield MCP-vel, brieftől a kész vágásig.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Pocomotoxx"
+  },
+  "homepage": "https://github.com/Pocomotoxx/videostoryboard",
+  "repository": "https://github.com/Pocomotoxx/videostoryboard"
+}
