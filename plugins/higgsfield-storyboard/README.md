@@ -14,6 +14,11 @@ scripts/project.py                  # rétegek állapotgépe, jóváhagyás- és
 scripts/assemble.py                 # helyi összefűzés ffmpeggel
 references/shot-grammar.md          # gépállás, szög, kameramozgás, promptszerkezet
 references/continuity.md            # karakter- és stílusfolytonosság
+references/mcp-eszkozok.md          # a Higgsfield MCP eszközkészlete, költségmérés
+references/prompt-iras.md           # promptszerkezet, hossz, tipikus félreértések
+references/hibamintak.md            # mi szokott elromlani és hogyan javítsd
+references/nyitohook.md             # a nyitó két másodperc közösségi médiához
+references/reklam-marketing-studio.md  # avatáros és termékreklám, korlátokkal
 templates/storyboard.example.json   # a storyboard.json szerkezete, kitöltött mintával
 ```
 

@@ -1,0 +1,70 @@
+# A Higgsfield MCP eszközkészlete
+
+Ez a fájl azt írja le, milyen eszközöket szokott kiajánlani a Higgsfield MCP-szervere, és
+melyiket mire használjuk. **Kiindulópont, nem szentírás**: a platform eszközkészlete
+kiadásonként változik, ezért az itt szereplő neveket az első futásnál mindig ellenőrizni
+kell a ténylegesen elérhető eszközlistán. Ha egy név nem stimmel, az eszközlista az igazság,
+nem ez a fájl.
+
+## Szerepkörök és a hozzájuk tartozó eszközök
+
+| Szerepkör a rendszerünkben | Várható eszköz | Mit csinál |
+|---|---|---|
+| `image_gen` | `generate_image` | Kezdőkocka és állókép generálása |
+| `image_to_video` | `generate_video` | Mozgókép egy kezdőkockából |
+| `character_train` | `soul_cast` | Visszatérő szereplő betanítása referenciafotókból |
+| `upscale` | `generate_image` felskálázó modellel | Felbontásnövelés |
+| `history` | `job_display` | Egy korábbi job eredményének megjelenítése |
+
+## Amit a költségkapunkhoz használunk
+
+**`balance`** — kiírja a kredit-egyenleget és az előfizetési csomagot. Ebből tölthető ki a
+telepítéskor a csomag neve és a havi keret, tehát ezt nem kell a felhasználótól megkérdezni.
+A CLI-n ugyanez `higgsfield account status` (a `balance` és a `credits` nem érvényes
+alparancs, ez visszatérő tévedés).
+
+**`get_cost: true`** — a `generate_image` és a `generate_video` hívásoknak átadható
+paraméter, amitől a hívás nem indít munkát, csak visszaadja a becsült kreditköltséget.
+Ezzel a kreditárak mérhetők, nem kell tippelni. A válaszban egy `adjustments` blokk is
+jön, ami megmutatja, milyen alapértékeket tett be a szerver a meg nem adott paraméterek
+helyére — ezt érdemes a felhasználónak is megmutatni.
+
+**`transactions`** — a legutóbbi kreditmozgások, időrendben visszafelé. Ott kell használni,
+ahol nincs előzetes becslés (lásd lent), tehát a tényleges költséget utólag olvassuk ki.
+CLI-n `higgsfield account transactions --size N`.
+
+**`models_explore`** — a modellek listája és paramétersémája. Az `action="get"` és a
+`model_id` megadásával egy adott modell paramétereit adja vissza: milyen képarányok
+engedettek, milyen hosszak, milyen módok. A képarány és a hossz **felsorolt érték, nem
+szabad szöveg** — mindig ebből ellenőrizd, ne abból, ami kézenfekvőnek tűnik.
+
+## Fájlok bejuttatása
+
+Feltöltött termékkép vagy referenciafotó nem adható át nyers URL-ként. A helyes út:
+`media_import_url` egy webes címhez, vagy a feltöltő eszköz (`media_upload` /
+`media_confirm`, illetve a felugró feltöltőablak) helyi fájlhoz. Mindkettő egy azonosítót
+ad vissza, és a generáló hívás azt kapja meg.
+
+## Fontos kivétel: a Marketing Studio
+
+A Marketing Studio modelljeire **nem működik a `get_cost` előzetes becslés**. Ott a
+költséget csak utólag, a `transactions` eszközzel lehet leolvasni. Ezt a felhasználónak
+előre meg kell mondani, mert ez az egyetlen pont, ahol a rendszer nem tud előre árat
+mondani.
+
+## Két felület: MCP és CLI
+
+A Higgsfieldnek az MCP mellett van parancssori eszköze is, és saját ajánlásuk szerint
+Claude Code-hoz a CLI a kényelmesebb, mert hosszú életű tokent használ interaktív belépés
+helyett. Mindkettő ugyanabból a kreditkeretből és ugyanabból a munkasorból dolgozik, tehát
+a választás csak ergonómia kérdése, a sorban elfoglalt helyet a fizetős csomag szintje
+dönti el, nem a felület.
+
+Beszélgetős munkához az MCP a kényelmesebb, és a bekötése is egyszerűbb — ezért az a
+rendszerünk alapértelmezése. Ha a felhasználó fejlesztő alkatú, vagy sok kötegelt munkát
+futtatna, érdemes megemlíteni neki a CLI-t is.
+
+---
+
+*A platformismeret egy része az [OSideMedia/higgsfield-ai-prompt-skill](https://github.com/OSideMedia/higgsfield-ai-prompt-skill)
+MIT-licences projektből származik, saját megfogalmazásban. Lásd a `NOTICE.md` fájlt.*

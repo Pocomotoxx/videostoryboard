@@ -45,6 +45,23 @@ DEFAULT_COSTS = {
 COST_KEYS = tuple(DEFAULT_COSTS)
 TOOL_ROLES = ("image_gen", "image_to_video", "character_train", "upscale", "history")
 
+# Marketing Studio reklámformátumok. A kulcs a jelenetlistában használt azonosító,
+# az érték azt mondja meg, támogat-e zárt listás nyitóhookot.
+AD_PRESETS = {
+    "ugc": True,
+    "tutorial": True,
+    "ugc_unboxing": True,
+    "hyper_motion": False,
+    "product_review": True,
+    "tv_spot": False,
+    "wild_card": False,
+    "ugc_virtual_try_on": True,
+    "virtual_try_on": False,
+}
+# Az egyetlen formátum, ami avatár nélkül is működik.
+AD_PRESETS_NO_AVATAR = ("hyper_motion",)
+AD_MAX_SECONDS = 15
+
 LAYERS = {
     "brief": 0,
     "treatment": 1,
@@ -190,7 +207,9 @@ def sync(root, state):
     for s in shots:
         spec[f"keyframe:{s['id']}"] = sha(json.dumps(s, sort_keys=True, ensure_ascii=False))
         spec[f"motion:{s['id']}"] = sha(json.dumps(
-            {k: s.get(k) for k in ("camera_move", "duration_s", "model", "prompt_en", "audio")},
+            {k: s.get(k) for k in ("camera_move", "duration_s", "model", "prompt_en", "audio",
+                                   "tipus", "preset", "hook_id", "setting_id", "avatar",
+                                   "termekkep", "generate_audio")},
             sort_keys=True, ensure_ascii=False))
 
     # input_hash topologikusan (réteg szerinti sorrend elég, a gráf DAG)
@@ -408,9 +427,11 @@ def cmd_estimate(args):
     board = load_board(args.project)
     c = state["costs"]
     shots = board.get("shots", [])
+    filmes = [s for s in shots if s.get("tipus", "filmes") == "filmes"]
+    reklam = [s for s in shots if s.get("tipus") == "reklam"]
     chars = len(board.get("look", {}).get("characters", []))
-    img = len(shots) * c["image"]
-    vid = sum(s.get("duration_s", 5) for s in shots) * c["video_per_second"]
+    img = len(filmes) * c["image"]
+    vid = sum(s.get("duration_s", 5) for s in filmes) * c["video_per_second"]
     train = chars * c["character_train"]
     spent = sum(n["spend"] for n in state["nodes"].values())
     print(f"\n  Jelenet: {len(shots)} db, összhossz {sum(s.get('duration_s', 5) for s in shots)} mp")
@@ -421,6 +442,12 @@ def cmd_estimate(args):
     teljes = int((train + img + vid) * 1.4)
     print(f"  +40% újrafuttatási tartalék -> {teljes:>6} kredit")
     print(f"  Eddig elköltve    {spent:>6} kredit")
+
+    if reklam:
+        mp = sum(s.get("duration_s", 5) for s in reklam)
+        print(f"\n  Ezen felül {len(reklam)} reklámjelenet ({mp} mp), amire a platform "
+              f"nem ad előzetes árat.\n  A tényleges költségük csak utólag olvasható ki; "
+              f"a fenti összeg ezt NEM tartalmazza.")
 
     havi = state.get("monthly_credits")
     if havi:
@@ -454,6 +481,79 @@ def cmd_set_tool(args):
     print(f"{args.role} -> {args.tool}")
 
 
+def cmd_check_shots(args):
+    """A jelenetlista ellenőrzése generálás előtt.
+
+    A reklámjelenetekre a Marketing Studio kemény korlátai vonatkoznak; ezeket
+    olcsóbb itt kiszűrni, mint egy elutasított generálás árán.
+    """
+    board = load_board(args.project)
+    shots = board.get("shots", [])
+    hibak, megjegyzesek = [], []
+
+    if not shots:
+        die("üres a jelenetlista")
+
+    ids = [s.get("id") for s in shots]
+    for dup in {i for i in ids if ids.count(i) > 1}:
+        hibak.append(f"ismétlődő jelenetazonosító: {dup}")
+
+    for s in shots:
+        sid = s.get("id", "?")
+        tipus = s.get("tipus", "filmes")
+        hossz = s.get("duration_s", 5)
+
+        if tipus not in ("filmes", "reklam"):
+            hibak.append(f"{sid}: ismeretlen tipus '{tipus}' (filmes vagy reklam)")
+            continue
+
+        if tipus == "filmes":
+            if hossz > 15:
+                hibak.append(f"{sid}: {hossz} mp, a klipek legfeljebb 15 mp-esek, bontsd szét")
+            if not s.get("prompt_en"):
+                hibak.append(f"{sid}: hiányzik a prompt_en")
+            continue
+
+        # reklámjelenet
+        preset = s.get("preset")
+        if preset not in AD_PRESETS:
+            hibak.append(f"{sid}: ismeretlen preset '{preset}'. "
+                         f"Lehetséges: {', '.join(AD_PRESETS)}")
+        if not s.get("termekkep"):
+            hibak.append(f"{sid}: a reklámjelenethez kötelező a termekkep")
+        if not 4 <= hossz <= AD_MAX_SECONDS:
+            hibak.append(f"{sid}: {hossz} mp, a reklámklip 4 és {AD_MAX_SECONDS} mp között lehet")
+
+        avatar = s.get("avatar")
+        if preset in AD_PRESETS_NO_AVATAR:
+            if avatar:
+                megjegyzesek.append(f"{sid}: a(z) {preset} avatár nélkül is működik, "
+                                    f"a megadott avatár szándékos-e?")
+        elif not avatar:
+            hibak.append(f"{sid}: hiányzik az avatar. Üresen hagyva minden generálás "
+                         f"más arcot tesz bele")
+        elif isinstance(avatar, list) and len(avatar) > 1:
+            hibak.append(f"{sid}: {len(avatar)} avatár van megadva, egyszerre pontosan egy lehet")
+
+        if s.get("hook_id") and preset in AD_PRESETS and not AD_PRESETS[preset]:
+            hibak.append(f"{sid}: a(z) {preset} formátumhoz nem tartozik hook-lista, "
+                         f"a hook_id-t hagyd el")
+        if s.get("characters") and len(s.get("characters", [])) > 1:
+            megjegyzesek.append(f"{sid}: több szereplő van felsorolva, de a reklámágon "
+                                f"az arcazonosság csak egy avatárra garantált")
+
+    for m in megjegyzesek:
+        print(f"  megjegyzés: {m}")
+    if hibak:
+        print()
+        for h in hibak:
+            print(f"  HIBA: {h}", file=sys.stderr)
+        sys.exit(1)
+    ad = sum(1 for s in shots if s.get("tipus") == "filmes" or "tipus" not in s)
+    print(f"\n  A jelenetlista rendben: {len(shots)} jelenet "
+          f"({ad} filmes, {len(shots) - ad} reklám).\n")
+
+
 def cmd_check_assembly(args):
     state = sync(args.project, load(args.project))
     board = load_board(args.project)
@@ -482,6 +582,7 @@ def main():
     sub.add_parser("next").set_defaults(f=cmd_next)
     sub.add_parser("estimate").set_defaults(f=cmd_estimate)
     sub.add_parser("report").set_defaults(f=cmd_report)
+    sub.add_parser("check-shots").set_defaults(f=cmd_check_shots)
     sub.add_parser("check-assembly").set_defaults(f=cmd_check_assembly)
 
     for name, fn in (("approve", cmd_approve), ("pending", cmd_pending),

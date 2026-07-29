@@ -1,5 +1,6 @@
 {
   "_megjegyzes": "Minta és séma egyben. A prompt_en MINDIG angol, a leiras magyar (azt az ügyfél olvassa). Klip maximum 15 másodperc.",
+  "_jelenettipusok": "tipus: 'filmes' (alapértelmezés, generált kezdőkockából) vagy 'reklam' (Marketing Studio: feltöltött termékkép + avatár + formátum). A reklámjelenet mezőit lásd az s003 példánál és a references/reklam-marketing-studio.md fájlban.",
 
   "look": {
     "stilus": "hideg, esős nagyvárosi reggel, filmes szemcse, halványított kontraszt",
@@ -56,6 +57,22 @@
       "prompt_en": "Close up, low angle. Akita puppy face filling the frame, looking up with big dark eyes, innocent expression. Wet fur, soft grey daylight. Static camera. Shallow depth of field, cinematic film grain.",
       "keyframe": "shots/s002_start.png",
       "video": "shots/s002.mp4"
+    },
+    {
+      "id": "s003",
+      "tipus": "reklam",
+      "duration_s": 8,
+      "leiras": "Avatáros termékbemutató: fiatal nő kézben tartja a krémet, telefonos szelfibeállításban beszél róla.",
+      "preset": "ugc",
+      "termekkep": "bemenet/termek_krem.png",
+      "avatar": { "tipus": "preset", "id": "<a lekérdezett listából>" },
+      "hook_id": "<a lekérdezett hook-listából, elhagyható>",
+      "setting_id": "<a lekérdezett helyszínlistából, elhagyható>",
+      "generate_audio": true,
+      "aspect": "9:16",
+      "prompt_en": "Casual selfie-framed testimonial. Young woman holds the moisturizer, speaks to camera in a bright bathroom, natural morning light.",
+      "video": "shots/s003.mp4",
+      "_megjegyzes": "Reklámjelenetnél nincs generált kezdőkocka: a termekkep a bemenet. A hook_id és setting_id csak zárt listából jöhet, kitalálni nem lehet. Legfeljebb egy avatár."
     }
   ],
 
