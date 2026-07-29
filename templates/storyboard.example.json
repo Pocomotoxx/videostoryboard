@@ -1,0 +1,77 @@
+{
+  "_megjegyzes": "Minta és séma egyben. A prompt_en MINDIG angol, a leiras magyar (azt az ügyfél olvassa). Klip maximum 15 másodperc.",
+
+  "look": {
+    "stilus": "hideg, esős nagyvárosi reggel, filmes szemcse, halványított kontraszt",
+    "paletta": "szürkéskék, meleg borostyán fényforrások",
+    "objektiv": "35mm, sekély mélységélesség",
+    "referencia_kepek": ["characters/look_ref_01.png"],
+    "characters": [
+      {
+        "id": "ferfi_01",
+        "leiras": "ötvenes évei elején járó férfi, őszülő félhosszú haj, rövid szakáll, fekete télikabát",
+        "soul_id": null,
+        "ref_images": ["characters/ferfi_01_a.png", "characters/ferfi_01_b.png"]
+      },
+      {
+        "id": "kutya_01",
+        "leiras": "akita kölyök, krémfehér és vörösesbarna bunda, sötét szemek",
+        "soul_id": null,
+        "ref_images": ["characters/kutya_01_a.png"]
+      }
+    ]
+  },
+
+  "shots": [
+    {
+      "id": "s001",
+      "duration_s": 5,
+      "shot_size": "WS",
+      "angle": "eye-level",
+      "subject": "esős utca",
+      "leiras": "Nyitókép. Nedves aszfalt, elmosódott lámpafények, a férfi hátulról a járdán.",
+      "camera_move": "slow push in",
+      "characters": ["ferfi_01"],
+      "continuity_from": null,
+      "model": "kling3",
+      "aspect": "16:9",
+      "audio": "eső, távoli forgalom",
+      "prompt_en": "Wide shot, eye level. Rainy grey morning city street, wet asphalt reflecting amber streetlights. A man in a black winter coat walks away from camera on the sidewalk. Slow push in. 35mm, shallow depth of field, cinematic film grain, muted cold blue palette.",
+      "keyframe": "shots/s001_start.png",
+      "video": "shots/s001.mp4"
+    },
+    {
+      "id": "s002",
+      "duration_s": 4,
+      "shot_size": "CU",
+      "angle": "low",
+      "subject": "kölyökkutya arca",
+      "leiras": "Közeli a kölyökről, ahogy felnéz. Nagy szemek, ártatlan tekintet.",
+      "camera_move": "static",
+      "characters": ["kutya_01"],
+      "continuity_from": "s001",
+      "model": "kling3",
+      "aspect": "16:9",
+      "audio": "halk nyüszítés",
+      "prompt_en": "Close up, low angle. Akita puppy face filling the frame, looking up with big dark eyes, innocent expression. Wet fur, soft grey daylight. Static camera. Shallow depth of field, cinematic film grain.",
+      "keyframe": "shots/s002_start.png",
+      "video": "shots/s002.mp4"
+    }
+  ],
+
+  "assembly": {
+    "sorrend": ["s001", "s002"],
+    "attunes": "vagas",
+    "osszhossz_cel_s": 30
+  },
+  "sound": {
+    "zene": "lassú zongora, moll",
+    "narracio": null,
+    "nyelv": "hu"
+  },
+  "finish": {
+    "felirat": true,
+    "upscale": false,
+    "kimenetek": ["16:9", "9:16"]
+  }
+}

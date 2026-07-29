@@ -1,11 +1,17 @@
-kimenet/*
-!kimenet/.gitkeep
 __pycache__/
 *.pyc
 .venv/
 .env
+
+# projektkönyvtárak és generált anyag (project.py init hozza létre)
+projektek/
+output/
+delivery/
+shots/
+characters/
 *.mp4
 *.mov
 *.wav
+*.mp3
 *.png
 *.jpg
