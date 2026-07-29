@@ -13,6 +13,7 @@ SKILL.md                            # a folyamat leírása, a skill belépőpont
 scripts/project.py                  # rétegek állapotgépe, jóváhagyás- és költségkapu
 scripts/assemble.py                 # helyi összefűzés ffmpeggel, felirat, hangerő
 scripts/frames.py                   # képkockák kimentése a kész klipek ellenőrzéséhez
+scripts/beatgrid.py                 # ütemre illesztett jelenethosszak
 references/shot-grammar.md          # gépállás, szög, kameramozgás, promptszerkezet
 references/continuity.md            # karakter- és stílusfolytonosság
 references/mcp-eszkozok.md          # a Higgsfield MCP eszközkészlete, költségmérés
@@ -21,6 +22,8 @@ references/prompt-iras.md           # promptszerkezet, hossz, tipikus félreért
 references/hibamintak.md            # mi szokott elromlani és hogyan javítsd
 references/nyitohook.md             # a nyitó két másodperc közösségi médiához
 references/reklam-marketing-studio.md  # avatáros és termékreklám, korlátokkal
+references/zene-es-ritmus.md        # vágásritmus, ütemre illesztés
+references/vegso-ellenorzes.md      # hétpontos ellenőrzés leszállítás előtt
 templates/storyboard.example.json   # a storyboard.json szerkezete, kitöltött mintával
 ```
 

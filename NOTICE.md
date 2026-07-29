@@ -67,6 +67,20 @@ elemzéséhez. A gondolat viszont, hogy a modellnek látnia kell a videót, inne
 a saját kimenetünk ellenőrzésére a `scripts/frames.py` készült, önálló megvalósításban,
 csak ffmpegre támaszkodva.
 
+## Vincentwei1021/video-shotcraft (Apache-2.0)
+
+https://github.com/Vincentwei1021/video-shotcraft
+
+Remotion-alapú, weboldal-képernyőképekből építő promóvideó-készítő. A gépezetét nem
+vettük át, mert más gyártási modell (Node.js, React-alapú képi összeállítás), és a
+mozgáskártyái weboldal-animációra szólnak, nem AI-felvételre. Két megoldás viszont
+átkerült, saját megvalósításban: a **vágópontok ütemre illesztése** és a **leszállítás
+előtti végső ellenőrzés**. Az Apache-2.0 licenc feltüntetési kötelezettségének ez a
+bejegyzés tesz eleget; a licenc szövege az eredeti projektben érhető el.
+
+A projekt zenei és effektkészletét nem vettük át: azok harmadik felek anyagai, saját
+felhasználási feltételekkel.
+
 ## Licenc nélküli források
 
 Két további nyilvános projektet is átnéztünk a tervezés során:

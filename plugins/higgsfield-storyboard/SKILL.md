@@ -192,6 +192,8 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" reject keyframe:s003 --note "
 
 A `shotlist` réteg a `templates/storyboard.example.json` szerinti szerkezetet tölti fel. Három referenciát olvass el hozzá: a `references/shot-grammar.md` a gépállásokról és kameramozgásokról szól, a `references/prompt-iras.md` arról, hogyan áll össze belőlük a tényleges angol prompt, a `references/nyitohook.md` pedig a nyitójelenetről — ez utóbbi akkor számít, ha a videó közösségi médiába vagy hirdetésnek készül.
 
+**Ha erős ritmusú zene lesz alatta, a zenét itt már ismerni kell.** A jelenethosszak generálási paraméterek, utólag nem nyújthatók — vagyis ha a vágásoknak ütemre kell esniük, azt a jelenetlistában kell eldönteni, nem az összefűzésnél. A `references/zene-es-ritmus.md` mondja meg, hogyan, a `scripts/beatgrid.py` pedig kiszámolja az ütemre eső hosszakat. Ha még nincs zene, a tartalom ritmusa szerint ossz, és ne próbálj kockapontos illesztést.
+
 Két fontos megkötés. A klipek legfeljebb tizenöt másodpercesek, tehát ennél hosszabb jelenet nem létezik, bontsd szét. A `prompt_en` mező **mindig angol**, a `leiras` mező magyar, mert azt az ügyfél olvassa.
 
 A jelenetlista elkészülte után, még a jóváhagyás előtt futtasd le az ellenőrzést:
@@ -261,6 +263,12 @@ Ezek költsége **nem becsülhető előre**, ugyanúgy, mint a reklámágé. Sz�
 ### Ha egy generálás nem sikerült
 
 Ne futtasd újra automatikusan. Mutasd meg az eredményt, és a `references/hibamintak.md` segítségével derítsd ki, melyik rétegen csúszott el — az alanynál, a cselekvésnél, a kameránál vagy a stílusnál. A javításnál **egyszerre egy dolgot változtass**, különben a következő eredményből nem derül ki, mi segített, és a kredit tanulság nélkül fogy.
+
+### Végső ellenőrzés leszállítás előtt
+
+A `finish` réteg után, még az átadás előtt menj végig a `references/vegso-ellenorzes.md` hét pontján. Ez nem ugyanaz, mint a rétegek jóváhagyása: ott jelenetenként néztétek, itt a **kész egészet** kell megnézni, és összevetni az eredeti briefel.
+
+Ne javíts magadtól ebben a szakaszban. Sorold fel, amit találtál, három súlyossági csoportban, és a felhasználó döntsön. A leszállítás előtti kapkodó javítás új hibát visz be.
 
 ## Amit soha ne csinálj
 
