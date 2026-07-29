@@ -23,7 +23,15 @@ később `/plugin marketplace update`, majd `/plugin update higgsfield-storyboar
 - **Python 3** — macOS és Linux: `python3`; Windowson `python`, mert ott a `python3`
   csak egy nem működő Microsoft Store-alias.
 - **ffmpeg** — az összefűzéshez. macOS: `brew install ffmpeg`.
-- **Higgsfield MCP** — a generáló rétegekhez (látvány, kezdőkockák, mozgás).
+- **Higgsfield MCP** — a generáló rétegekhez (látvány, kezdőkockák, mozgás). A hivatalos
+  felhős szervert kösd be, ehhez nem kell se API-kulcs, se telepítés:
+
+  ```bash
+  claude mcp add --transport http --scope user higgsfield https://mcp.higgsfield.ai/mcp
+  ```
+
+  Utána a `/mcp` parancs a böngésződben nyitja meg a Higgsfield belépőoldalát. A jelszavad
+  a böngészőben marad, a Claude Code csak hozzáférési tokent kap.
 
 ## Szerkezet
 

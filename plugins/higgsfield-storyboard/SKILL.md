@@ -47,7 +47,21 @@ A `project.py` build-rendszerként kezeli a projektet. Minden node tárolja a be
 
 ## Munkamenet
 
-### Első indulás: telepítés
+### Első indulás: a Higgsfield MCP bekötése
+
+A generáló rétegek a Higgsfield hivatalos felhős MCP-szerverén keresztül működnek. Ha a felhasználónál ez még nincs bekötve, ez az első lépés, minden más előtt.
+
+```bash
+claude mcp add --transport http --scope user higgsfield https://mcp.higgsfield.ai/mcp
+```
+
+Ezután a felhasználó a `/mcp` paranccsal, a saját böngészőjében lép be a Higgsfield-fiókjába, és engedélyezi a hozzáférést. A `--scope user` azért kell, hogy a szerver minden projektjében elérhető legyen.
+
+**Jelszót, API-kulcsot vagy más belépési adatot soha ne kérj tőle, és ne is vegyél át.** A belépés OAuth-tal, a böngészőben történik, a jelszó nem megy át a beszélgetésen. Ha a felhasználó mégis beírná, figyelmeztesd, hogy erre nincs szükség, és irányítsd a `/mcp` parancshoz. Ugyanez vonatkozik a `cloud.higgsfield.ai` API-kulcsaira: a hivatalos MCP-szerverhez nem kellenek.
+
+Belépés után kérd meg, hogy a Higgsfield-fiókjában nézze meg, melyik egyenlegből vont le az első generálás — az előfizetése havi kreditjéből vagy külön fejlesztői API-keretből. A költségbecslés csak akkor lesz valós, ha a megfelelő keretet mérjük.
+
+### Első indulás: telepítési adatok
 
 Minden munkamenet elején futtasd le:
 
