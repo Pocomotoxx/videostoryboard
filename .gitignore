@@ -1,0 +1,11 @@
+kimenet/*
+!kimenet/.gitkeep
+__pycache__/
+*.pyc
+.venv/
+.env
+*.mp4
+*.mov
+*.wav
+*.png
+*.jpg
