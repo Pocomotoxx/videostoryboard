@@ -36,6 +36,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+## higgsfield-ai/cli (MIT)
+
+https://github.com/higgsfield-ai/cli
+
+A Higgsfield hivatalos parancssori eszközének dokumentációja. Innen származnak a
+parancsnevek, a modellazonosítók, a Marketing Studio paraméterei és a munkafolyamatok
+(képarányváltás, szinkronizálás, hangcsere) leírásai. Ez az elsődleges, hiteles forrás:
+ahol ellentmond bármely más forrásnak, ez az irányadó. MIT-licenc alatt érhető el.
+
 ## Licenc nélküli források
 
 Két további nyilvános projektet is átnéztünk a tervezés során:

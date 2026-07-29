@@ -61,6 +61,8 @@ Ezután a felhasználó a `/mcp` paranccsal, a saját böngészőjében lép be 
 
 **Jelszót, API-kulcsot vagy más belépési adatot soha ne kérj tőle, és ne is vegyél át.** A belépés OAuth-tal, a böngészőben történik, a jelszó nem megy át a beszélgetésen. Ha a felhasználó mégis beírná, figyelmeztesd, hogy erre nincs szükség, és irányítsd a `/mcp` parancshoz. Ugyanez vonatkozik a `cloud.higgsfield.ai` API-kulcsaira: a hivatalos MCP-szerverhez nem kellenek.
 
+**A parancssori eszköz is javasolt, az MCP mellé.** Több dolog csak ott van meg: modellséma-lekérdezés, előzetes árszámítás, szereplőtanítás, tartalomtudatos képarányváltás. A telepítése minden rendszeren `npm install -g @higgsfield/cli`, belépés `higgsfield auth login`. A részletek a `references/cli.md` fájlban. Ha egy lépéshez az MCP-n nem találsz eszközt, előbb ott nézd meg, mielőtt kerülőutat terveznél.
+
 Belépés után kérd meg, hogy a Higgsfield-fiókjában nézze meg, melyik egyenlegből vont le az első generálás — az előfizetése havi kreditjéből vagy külön fejlesztői API-keretből. A költségbecslés csak akkor lesz valós, ha a megfelelő keretet mérjük.
 
 ### Első indulás: telepítési adatok
@@ -98,9 +100,11 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set monthly_credits <s
 
 Előbb ellenőrizd a modell paramétersémáját (`models_explore`), mert a képarány és a hossz felsorolt érték, nem szabad szöveg — érvénytelen paraméterrel a mérés is hibás lesz. Utána mérj: egy kezdőkocka ára a képmodellel, egy másodpercnyi mozgókép ára a videómodellel (a teljes klip árát oszd el a hosszal), egy szereplő betanítása, egy felskálázás. Ha egy tétel nem mérhető, azt az egyet kérdezd meg.
 
-Mondd meg a felhasználónak, melyik modellel mértél, mert az ár modellenként eltér. Ha később más modellre váltotok, a mérést meg kell ismételni.
+**A modellt is rögzítsd**, amivel mértél, mert az ár modellenként eltér, és fél év múlva már senki nem fogja tudni, melyik számhoz melyik modell tartozott. Modellazonosítót ne találj ki: a `model list` adja az aktuális katalógust, a gyakoriakat a `references/cli.md` sorolja fel.
 
 ```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set model.image <modellazonosito>
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set model.video <modellazonosito>
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set cost.image <szam>
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set cost.video_per_second <szam>
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set cost.character_train <szam>
@@ -188,6 +192,14 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/assemble.py" --project . --aspect 9:16
 ```
 
 Az összefűzés helyben fut ffmpeggel, nem az MCP-n keresztül. A `check-assembly` ellenőrzi, hogy minden jelenet jóváhagyott és letöltött állapotban van-e.
+
+**Képarányváltásnál figyelj.** Az `assemble.py` egyszerűen levágja a kép szélét, ami 16:9-ből 9:16-ba váltva fontos tartalmat vághat le — feliratot, a szereplő fejét, a terméket. Ha ez fenyeget, a platform tartalomtudatos képarányváltó munkafolyamata a jobb megoldás, lásd `references/cli.md`. Az kreditbe kerül, a helyi vágás nem, ezért előbb nézd meg a helyi eredményt, és csak akkor válts, ha tényleg romlott.
+
+### Hang
+
+A narrációhoz beszédszintézis használható, kiválasztott hanggal — a hangok listája lekérdezhető, kitalálni nem lehet. Kész videó idegen nyelvű változatához külön szinkronizáló munkafolyamat van, a hang cseréjéhez pedig hangcserélő. Mindkettő a `references/cli.md`-ben szerepel.
+
+Ezek költsége **nem becsülhető előre**, ugyanúgy, mint a reklámágé. Szólj róla, mielőtt elindítod.
 
 ### Ha egy generálás nem sikerült
 

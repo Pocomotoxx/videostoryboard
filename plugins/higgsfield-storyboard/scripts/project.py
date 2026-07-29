@@ -45,6 +45,10 @@ DEFAULT_COSTS = {
 COST_KEYS = tuple(DEFAULT_COSTS)
 TOOL_ROLES = ("image_gen", "image_to_video", "character_train", "upscale", "history")
 
+# A kreditár modellenként eltér, ezért rögzítjük, melyik modellel mértünk.
+# Ha a modell változik, a mérést meg kell ismételni.
+MODEL_ROLES = ("image", "video", "tts")
+
 # Marketing Studio reklámformátumok. A kulcs a jelenetlistában használt azonosító,
 # az érték azt mondja meg, támogat-e zárt listás nyitóhookot.
 AD_PRESETS = {
@@ -101,6 +105,7 @@ def load_config():
     c.setdefault("monthly_credits", None)
     c.setdefault("costs", {})
     c.setdefault("tools", {})
+    c.setdefault("models", {})
     return c
 
 
@@ -119,6 +124,7 @@ def missing_config(c):
         miss.append("monthly_credits")
     miss += [f"cost.{k}" for k in COST_KEYS if c["costs"].get(k) is None]
     miss += [f"tool.{r}" for r in TOOL_ROLES if not c["tools"].get(r)]
+    miss += [f"model.{r}" for r in ("image", "video") if not c["models"].get(r)]
     return miss
 
 
@@ -255,12 +261,17 @@ def cmd_config_show(args):
     for k in COST_KEYS:
         v = c["costs"].get(k)
         print(f"    {k:<20} {v if v is not None else 'HIÁNYZIK'}")
+    print("\n  Modellek (ezekkel mértük az árakat)")
+    for r in MODEL_ROLES:
+        kell = "" if r != "tts" else "  (csak narrációhoz)"
+        print(f"    {r:<20} {(c['models'].get(r) or 'HIÁNYZIK') + kell}")
     print("\n  MCP-eszközök")
     for r in TOOL_ROLES:
         print(f"    {r:<20} {c['tools'].get(r) or 'HIÁNYZIK'}")
     if miss:
-        print(f"\n  Hiányzik {len(miss)} adat. Kérdezd meg a felhasználótól, "
-              f"és vedd fel a `config set` paranccsal. Ne tippelj helyette.\n")
+        print(f"\n  Hiányzik {len(miss)} adat. Derítsd fel őket (egyenleg, modellséma, "
+              f"árbecslés), és vedd fel a `config set` paranccsal.\n  Amit nem tudsz "
+              f"lekérdezni, azt kérdezd meg a felhasználótól — de ne tippelj helyette.\n")
     else:
         print("\n  A telepítés teljes.\n")
 
@@ -282,9 +293,14 @@ def cmd_config_set(args):
         if r not in TOOL_ROLES:
             die(f"ismeretlen szerepkör: {r}. Lehetséges: {', '.join(TOOL_ROLES)}")
         c["tools"][r] = val
+    elif key.startswith("model."):
+        r = key.split(".", 1)[1]
+        if r not in MODEL_ROLES:
+            die(f"ismeretlen modellszerep: {r}. Lehetséges: {', '.join(MODEL_ROLES)}")
+        c["models"][r] = val
     else:
         die(f"ismeretlen kulcs: {key}. Lehetséges: plan, monthly_credits, "
-            f"cost.<tétel>, tool.<szerepkör>")
+            f"cost.<tétel>, tool.<szerepkör>, model.<szerep>")
     save_config(c)
     print(f"{key} -> {val}")
     miss = missing_config(c)
@@ -306,6 +322,7 @@ def cmd_init(args):
         "name": args.name,
         "created": time.strftime("%Y-%m-%d %H:%M"),
         "tools": {r: cfg["tools"].get(r) for r in TOOL_ROLES},
+        "models": {r: cfg["models"].get(r) for r in MODEL_ROLES},
         "costs": costs,
         "costs_calibrated": all(cfg["costs"].get(k) is not None for k in COST_KEYS),
         "plan": cfg["plan"],
@@ -461,6 +478,10 @@ def cmd_estimate(args):
         print("\n  FIGYELEM: a kreditárak nincsenek kalibrálva, ez a becslés kitalált "
               "alapértékekkel készült. Ne mutasd meg ügyfélnek. Javítás: "
               "project.py config show")
+    else:
+        m = state.get("models") or {}
+        print(f"  Mért modellek: kép {m.get('image') or '?'}, videó {m.get('video') or '?'} "
+              f"— más modellel az ár eltér.")
     print()
 
 

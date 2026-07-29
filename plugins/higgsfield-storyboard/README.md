@@ -15,6 +15,7 @@ scripts/assemble.py                 # helyi összefűzés ffmpeggel
 references/shot-grammar.md          # gépállás, szög, kameramozgás, promptszerkezet
 references/continuity.md            # karakter- és stílusfolytonosság
 references/mcp-eszkozok.md          # a Higgsfield MCP eszközkészlete, költségmérés
+references/cli.md                   # hivatalos parancssori eszköz, modellazonosítók
 references/prompt-iras.md           # promptszerkezet, hossz, tipikus félreértések
 references/hibamintak.md            # mi szokott elromlani és hogyan javítsd
 references/nyitohook.md             # a nyitó két másodperc közösségi médiához

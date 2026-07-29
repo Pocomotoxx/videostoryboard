@@ -12,9 +12,15 @@ nem ez a fájl.
 |---|---|---|
 | `image_gen` | `generate_image` | Kezdőkocka és állókép generálása |
 | `image_to_video` | `generate_video` | Mozgókép egy kezdőkockából |
-| `character_train` | `soul_cast` | Visszatérő szereplő betanítása referenciafotókból |
+| `character_train` | lásd lent | Visszatérő szereplő betanítása referenciafotókból |
 | `upscale` | `generate_image` felskálázó modellel | Felbontásnövelés |
 | `history` | `job_display` | Egy korábbi job eredményének megjelenítése |
+
+**A szereplő betanítása nem generáló modell.** A parancssori eszközön külön parancs
+(`soul-id create`), az MCP-n pedig felderítéssel kell megkeresni a megfelelő eszközt.
+Figyelj rá, hogy a `soul_cast` **képgeneráló modell neve**, nem a betanításé — ez könnyen
+összetéveszthető. Ha az MCP-n nincs betanító eszköz, a `references/cli.md` mutatja a
+parancssori utat.
 
 ## Amit a költségkapunkhoz használunk
 
@@ -45,24 +51,22 @@ Feltöltött termékkép vagy referenciafotó nem adható át nyers URL-ként. A
 `media_confirm`, illetve a felugró feltöltőablak) helyi fájlhoz. Mindkettő egy azonosítót
 ad vissza, és a generáló hívás azt kapja meg.
 
-## Fontos kivétel: a Marketing Studio
+## Ahol nincs előzetes árbecslés
 
-A Marketing Studio modelljeire **nem működik a `get_cost` előzetes becslés**. Ott a
-költséget csak utólag, a `transactions` eszközzel lehet leolvasni. Ezt a felhasználónak
-előre meg kell mondani, mert ez az egyetlen pont, ahol a rendszer nem tud előre árat
-mondani.
+A Marketing Studio modelljeire, valamint a hangcsere és a szinkronizálás
+munkafolyamatára **nem működik a `get_cost`**. Ezeknél a költséget csak utólag, a
+`transactions` eszközzel lehet leolvasni. Ezt a felhasználónak előre meg kell mondani.
 
 ## Két felület: MCP és CLI
 
-A Higgsfieldnek az MCP mellett van parancssori eszköze is, és saját ajánlásuk szerint
-Claude Code-hoz a CLI a kényelmesebb, mert hosszú életű tokent használ interaktív belépés
-helyett. Mindkettő ugyanabból a kreditkeretből és ugyanabból a munkasorból dolgozik, tehát
-a választás csak ergonómia kérdése, a sorban elfoglalt helyet a fizetős csomag szintje
-dönti el, nem a felület.
+A Higgsfieldnek van hivatalos parancssori eszköze is. Mindkettő ugyanabból a
+kreditkeretből és ugyanabból a munkasorból dolgozik, tehát a választás ergonómia kérdése.
 
-Beszélgetős munkához az MCP a kényelmesebb, és a bekötése is egyszerűbb — ezért az a
-rendszerünk alapértelmezése. Ha a felhasználó fejlesztő alkatú, vagy sok kötegelt munkát
-futtatna, érdemes megemlíteni neki a CLI-t is.
+Beszélgetős munkához az MCP a kényelmesebb, a bekötése is egyszerűbb, ezért az a
+rendszerünk alapértelmezése. **A parancssori eszköz viszont több ponton pontosabb**:
+ott van modellséma-lekérdezés, előzetes árszámítás, szereplőtanítás és a képarányváltó
+munkafolyamat. Ha egy lépéshez az MCP-n nem találsz eszközt, nézd meg a
+`references/cli.md` fájlt, mielőtt kerülőutat terveznél — jó eséllyel ott megvan.
 
 ---
 

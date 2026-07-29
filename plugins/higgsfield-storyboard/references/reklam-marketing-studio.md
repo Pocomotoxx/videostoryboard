@@ -56,6 +56,21 @@ Két buktató. A stúdiós próba azonosítója `virtual_try_on`, nem `pro_virtu
 nem következik a nevéből. A TV-spot alapból tesz a végére egy különálló termékképet;
 ha ez nem kell, kifejezetten meg kell tiltani a promptban.
 
+## A tényleges paraméterek
+
+A hivatalos dokumentáció szerint a modell azonosítója `marketing_studio_video`, és a
+formátum nem külön mezőben, hanem a **`mode`** paraméterben megy át (alapértéke `ugc`).
+A klip hossza `duration`, alapértéke 15 másodperc. A felbontás `480p`, `720p` vagy
+`1080p` lehet, alapból `720p` — függőleges hirdetéshez ezt érdemes feljebb venni.
+A képarány felsorolt érték, a `9:16` is köztük van.
+
+Egy ütközés, amit érdemes tudni: ha korábbi hirdetésre hivatkozol
+(`ad_reference_id`), akkor hookot és helyszínt **nem** adhatsz meg mellé. A termék
+megadásának két módja sem kombinálható egymással.
+
+Ezek a paraméterek is változhatnak, ezért generálás előtt a modell sémáját akkor is
+kérdezd le, ha ez a fájl mást mond. A séma az igazság.
+
 ## Hook és helyszín
 
 Öt formátumnál választható a nyitóhook és a helyszín, de **csak zárt listából**: a
