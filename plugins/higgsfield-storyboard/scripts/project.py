@@ -25,14 +25,25 @@ for _s in (sys.stdout, sys.stderr):
 STATE = "project.json"
 BOARD = "storyboard.json"
 
-# Alapértelmezett kreditköltségek. Kalibráld a saját Higgsfield-csomagodhoz,
-# mert modellenként és felbontásonként eltér.
+# Gépszintű beállítások: előfizetés, kreditárak, MCP-eszköznevek. Ezek nem
+# projektfüggők, ezért a felhasználó könyvtárában élnek, és az `init` innen
+# veszi az új projekt alapértékeit.
+CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".higgsfield-storyboard")
+CONFIG = os.path.join(CONFIG_DIR, "config.json")
+
+# Kiindulási kreditköltségek. NEM valós árak, csak azért vannak, hogy a
+# projekt kalibrálás nélkül is elinduljon. A tényleges árak modellenként és
+# felbontásonként eltérnek, ezért a `config set cost.*` paranccsal kell
+# felvenni őket a saját Higgsfield-csomag alapján.
 DEFAULT_COSTS = {
     "image": 5,
     "video_per_second": 10,
     "character_train": 60,
     "upscale": 20,
 }
+
+COST_KEYS = tuple(DEFAULT_COSTS)
+TOOL_ROLES = ("image_gen", "image_to_video", "character_train", "upscale", "history")
 
 LAYERS = {
     "brief": 0,
@@ -62,6 +73,36 @@ def file_hash(path):
         return ""
     with open(path, "rb") as f:
         return hashlib.sha256(f.read()).hexdigest()[:16]
+
+
+def load_config():
+    c = {}
+    if os.path.exists(CONFIG):
+        with open(CONFIG, encoding="utf-8") as f:
+            c = json.load(f)
+    c.setdefault("plan", None)
+    c.setdefault("monthly_credits", None)
+    c.setdefault("costs", {})
+    c.setdefault("tools", {})
+    return c
+
+
+def save_config(c):
+    os.makedirs(CONFIG_DIR, exist_ok=True)
+    with open(CONFIG, "w", encoding="utf-8") as f:
+        json.dump(c, f, ensure_ascii=False, indent=2)
+
+
+def missing_config(c):
+    """A még kitöltetlen telepítési tételek listája."""
+    miss = []
+    if not c.get("plan"):
+        miss.append("plan")
+    if not c.get("monthly_credits"):
+        miss.append("monthly_credits")
+    miss += [f"cost.{k}" for k in COST_KEYS if c["costs"].get(k) is None]
+    miss += [f"tool.{r}" for r in TOOL_ROLES if not c["tools"].get(r)]
+    return miss
 
 
 def load(root):
@@ -184,6 +225,54 @@ MARK = {"approved": "OK ", "stale": "ELÉVÜLT", "pending": "VÁR", "rejected": 
 
 # ---------------------------------------------------------------- parancsok
 
+def cmd_config_show(args):
+    c = load_config()
+    miss = missing_config(c)
+    print("\n  Higgsfield-storyboard telepítési adatok")
+    print(f"  ({CONFIG})\n")
+    print(f"  Előfizetési csomag      {c['plan'] or 'HIÁNYZIK'}")
+    print(f"  Havi kredit             {c['monthly_credits'] or 'HIÁNYZIK'}")
+    print("\n  Kreditárak")
+    for k in COST_KEYS:
+        v = c["costs"].get(k)
+        print(f"    {k:<20} {v if v is not None else 'HIÁNYZIK'}")
+    print("\n  MCP-eszközök")
+    for r in TOOL_ROLES:
+        print(f"    {r:<20} {c['tools'].get(r) or 'HIÁNYZIK'}")
+    if miss:
+        print(f"\n  Hiányzik {len(miss)} adat. Kérdezd meg a felhasználótól, "
+              f"és vedd fel a `config set` paranccsal. Ne tippelj helyette.\n")
+    else:
+        print("\n  A telepítés teljes.\n")
+
+
+def cmd_config_set(args):
+    c = load_config()
+    key, val = args.key, args.value
+    if key == "plan":
+        c["plan"] = val
+    elif key == "monthly_credits":
+        c["monthly_credits"] = int(val)
+    elif key.startswith("cost."):
+        k = key.split(".", 1)[1]
+        if k not in COST_KEYS:
+            die(f"ismeretlen költségtétel: {k}. Lehetséges: {', '.join(COST_KEYS)}")
+        c["costs"][k] = float(val) if "." in val else int(val)
+    elif key.startswith("tool."):
+        r = key.split(".", 1)[1]
+        if r not in TOOL_ROLES:
+            die(f"ismeretlen szerepkör: {r}. Lehetséges: {', '.join(TOOL_ROLES)}")
+        c["tools"][r] = val
+    else:
+        die(f"ismeretlen kulcs: {key}. Lehetséges: plan, monthly_credits, "
+            f"cost.<tétel>, tool.<szerepkör>")
+    save_config(c)
+    print(f"{key} -> {val}")
+    miss = missing_config(c)
+    if miss:
+        print(f"Még hiányzik: {', '.join(miss)}")
+
+
 def cmd_init(args):
     root = os.path.abspath(args.name)
     os.makedirs(root, exist_ok=True)
@@ -191,12 +280,17 @@ def cmd_init(args):
         os.makedirs(os.path.join(root, d), exist_ok=True)
     if os.path.exists(os.path.join(root, STATE)):
         die("már létezik projekt ebben a könyvtárban")
+    cfg = load_config()
+    costs = dict(DEFAULT_COSTS)
+    costs.update({k: v for k, v in cfg["costs"].items() if v is not None})
     state = {
         "name": args.name,
         "created": time.strftime("%Y-%m-%d %H:%M"),
-        "tools": {r: None for r in
-                  ("image_gen", "image_to_video", "character_train", "upscale", "history")},
-        "costs": dict(DEFAULT_COSTS),
+        "tools": {r: cfg["tools"].get(r) for r in TOOL_ROLES},
+        "costs": costs,
+        "costs_calibrated": all(cfg["costs"].get(k) is not None for k in COST_KEYS),
+        "plan": cfg["plan"],
+        "monthly_credits": cfg["monthly_credits"],
         "nodes": {},
         "spend_log": [],
     }
@@ -210,6 +304,10 @@ def cmd_init(args):
                   open(board, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     save(root, sync(root, state))
     print(f"Projekt létrehozva: {root}")
+    miss = missing_config(cfg)
+    if miss:
+        print(f"FIGYELEM: a telepítés hiányos ({', '.join(miss)}). "
+              f"Futtasd: project.py config show")
 
 
 def cmd_status(args):
@@ -320,8 +418,23 @@ def cmd_estimate(args):
     print(f"  Kezdőkockák       {img:>6} kredit")
     print(f"  Mozgókép          {vid:>6} kredit")
     print(f"  Alapösszeg        {train + img + vid:>6} kredit")
-    print(f"  +40% újrafuttatási tartalék -> {int((train + img + vid) * 1.4):>6} kredit")
-    print(f"  Eddig elköltve    {spent:>6} kredit\n")
+    teljes = int((train + img + vid) * 1.4)
+    print(f"  +40% újrafuttatási tartalék -> {teljes:>6} kredit")
+    print(f"  Eddig elköltve    {spent:>6} kredit")
+
+    havi = state.get("monthly_credits")
+    if havi:
+        arany = round(teljes / havi * 100)
+        print(f"\n  A(z) {state.get('plan') or '?'} csomag havi kerete {havi} kredit, "
+              f"ez a projekt ennek {arany}%-a.")
+        if teljes > havi:
+            print("  FIGYELEM: a becslés meghaladja a havi keretet. Vagy rövidítsd a "
+                  "videót, vagy előre beszéld meg az ügyféllel a kreditvásárlást.")
+    if not state.get("costs_calibrated", False):
+        print("\n  FIGYELEM: a kreditárak nincsenek kalibrálva, ez a becslés kitalált "
+              "alapértékekkel készült. Ne mutasd meg ügyfélnek. Javítás: "
+              "project.py config show")
+    print()
 
 
 def cmd_report(args):
@@ -384,6 +497,12 @@ def main():
 
     s = sub.add_parser("set-tool"); s.add_argument("role"); s.add_argument("tool")
     s.set_defaults(f=cmd_set_tool)
+
+    cfg = sub.add_parser("config", help="gépszintű telepítési adatok")
+    cfgsub = cfg.add_subparsers(dest="cfgcmd", required=True)
+    cfgsub.add_parser("show", help="mi van beállítva, mi hiányzik").set_defaults(f=cmd_config_show)
+    s = cfgsub.add_parser("set", help="plan | monthly_credits | cost.<tétel> | tool.<szerepkör>")
+    s.add_argument("key"); s.add_argument("value"); s.set_defaults(f=cmd_config_set)
 
     args = ap.parse_args()
     args.f(args)

@@ -47,6 +47,46 @@ A `project.py` build-rendszerként kezeli a projektet. Minden node tárolja a be
 
 ## Munkamenet
 
+### Első indulás: telepítés
+
+Minden munkamenet elején futtasd le:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config show
+```
+
+Ha bármi `HIÁNYZIK`, akkor **először a telepítést vidd végig, és csak utána kezdj munkához**. Az adatokat kérdezd meg a felhasználótól, egyesével, magyarázattal. Soha ne tippelj helyette, és ne töltsd ki alapértékkel: a kreditárak modellenként és csomagonként eltérnek, egy rossz szám hibás ügyfélárajánlatot eredményez.
+
+A telepítés három kérdéskörből áll, ebben a sorrendben.
+
+**Előfizetés.** Kérdezd meg, melyik Higgsfield-csomagja van, és mennyi kredit jár rá havonta. Ez a fiókja számlázási oldalán látszik. Ebből tudja majd a rendszer megmondani, hogy egy projekt mekkora részét eszi meg a havi keretnek.
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set plan "<csomagnev>"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set monthly_credits <szam>
+```
+
+**MCP-eszközök.** A Higgsfield MCP eszközkészlete változik, ezért ne dolgozz beégetett eszköznevekkel. Nézd meg a ténylegesen elérhető eszközöket, javasolj hozzárendelést az öt szerepkörre, és a felhasználóval hagyasd jóvá, mielőtt rögzíted. Ha valamelyik szerepkörhöz nincs eszköz, mondd meg neki, és tervezz kerülőutat — eszköznevet kitalálni tilos.
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set tool.image_gen "<eszköznév>"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set tool.image_to_video "<eszköznév>"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set tool.character_train "<eszköznév>"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set tool.upscale "<eszköznév>"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set tool.history "<eszköznév>"
+```
+
+**Kreditárak.** Négy tételt kell megadnia, a saját csomagjában érvényes árakkal. Ezeket a Higgsfield felületén látja generálás előtt. Magyarázd el, mit jelentenek: `image` egy kezdőkocka ára, `video_per_second` a mozgókép másodpercenkénti ára, `character_train` egy szereplő betanítása, `upscale` egy klip felskálázása. Ha több modell közül választhat, a ténylegesen használni tervezett modell árát vegyétek.
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set cost.image <szam>
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set cost.video_per_second <szam>
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set cost.character_train <szam>
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set cost.upscale <szam>
+```
+
+A beállítások a felhasználó gépén, a `~/.higgsfield-storyboard/config.json` fájlban maradnak, tehát ezt egyszer kell végigcsinálni, nem projektenként. Az `init` innen örökli az árakat és az eszközneveket. Ha később árat vagy csomagot vált, ugyanezekkel a parancsokkal frissíthető, de a **már létező projektek a saját mentett áraikkal dolgoznak tovább**, hogy a korábbi becslések visszakereshetők maradjanak.
+
 ### Indulás
 
 ```bash
@@ -56,18 +96,11 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" status
 
 Ha félbeszakadt munkamenetet folytatsz, mindig `status` és `next` hívással kezdj. Az igazság a `project.json`-ban van, nem a beszélgetésben.
 
-### Eszközfelderítés
-
-A Higgsfield MCP eszközkészlete változik, ezért ne dolgozz beégetett eszköznevekkel. Az első futásnál nézd meg a ténylegesen elérhető eszközöket, és rögzítsd a szerepkör-hozzárendelést:
+Az új projekt a telepítéskor megadott eszközneveket és árakat örökli. Ha egy adott munkánál el kell térni ettől — mondjuk más videómodellel dolgoztok —, a projekten belül felülírható, a gépszintű beállítás érintetlenül hagyásával:
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" set-tool image_gen "<eszköznév>"
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" set-tool image_to_video "<eszköznév>"
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" set-tool character_train "<eszköznév>"
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" set-tool upscale "<eszköznév>"
 ```
-
-Szükséges szerepkörök: `image_gen`, `image_to_video`, `character_train`, `upscale`, `history`. Ha valamelyikhez nincs eszköz, jelezd a felhasználónak, és tervezd meg a kerülőutat, ne találj ki eszköznevet.
 
 ### Rétegenkénti haladás
 
@@ -98,7 +131,7 @@ Generálás előtt mindig:
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" estimate
 ```
 
-A becslést mutasd meg a felhasználónak, mielőtt az 5. rétegbe lépnél. Az elköltött kreditet a `project.py spend` rögzíti, az `report` pedig kiírja a projekt tényleges költségét, ami ügyfélszámlázáshoz kell.
+A becslés megmutatja azt is, hogy a projekt a havi keret hány százalékát viszi el, és figyelmeztet, ha a kreditárak nincsenek kalibrálva. Kalibrálatlan becslést ügyfélnek ne mutass. A becslést mutasd meg a felhasználónak, mielőtt az 5. rétegbe lépnél. Az elköltött kreditet a `project.py spend` rögzíti, az `report` pedig kiírja a projekt tényleges költségét, ami ügyfélszámlázáshoz kell.
 
 ### Összefűzés
 
