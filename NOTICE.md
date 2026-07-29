@@ -45,6 +45,17 @@ parancsnevek, a modellazonosítók, a Marketing Studio paraméterei és a munkaf
 (képarányváltás, szinkronizálás, hangcsere) leírásai. Ez az elsődleges, hiteles forrás:
 ahol ellentmond bármely más forrásnak, ez az irányadó. MIT-licenc alatt érhető el.
 
+## digitalsamba/claude-code-video-toolkit (MIT)
+
+https://github.com/digitalsamba/claude-code-video-toolkit
+
+Egy másik felépítésű, saját GPU-ra és nyílt forrású modellekre épülő videógyártó
+készlet. A teljes eszközláncát nem vettük át, mert az külön infrastruktúrát igényelne
+(saját felhős GPU, tárhely, Node.js-alapú képi összeállítás). Három megoldás viszont
+átkerült, saját megvalósításban: a ráégetett felirat, a műsorhangerő egységesítése, és
+a jelenetenkénti, rögzített válaszlehetőségekkel dolgozó átnézési kör. Az arculati
+profil ötlete szintén innen származik. MIT-licenc alatt érhető el.
+
 ## Licenc nélküli források
 
 Két további nyilvános projektet is átnéztünk a tervezés során:

@@ -3,6 +3,14 @@
   "_jelenettipusok": "tipus: 'filmes' (alapértelmezés, generált kezdőkockából) vagy 'reklam' (Marketing Studio: feltöltött termékkép + avatár + formátum). A reklámjelenet mezőit lásd az s003 példánál és a references/reklam-marketing-studio.md fájlban.",
 
   "look": {
+    "brand": {
+      "nev": "Ügyfél Kft.",
+      "elsodleges_szin": "#ea580c",
+      "szoveg_szin": "#1e293b",
+      "betutipus": "Inter",
+      "logo": "bemenet/logo.png",
+      "_megjegyzes": "Az ügyfél arculata. A záróképhez, a feliratokhoz és a szöveges rátétekhez használjuk, hogy több videón át egységes maradjon. A logót utómunkában helyezzük rá, nem generáltatjuk."
+    },
     "stilus": "hideg, esős nagyvárosi reggel, filmes szemcse, halványított kontraszt",
     "paletta": "szürkéskék, meleg borostyán fényforrások",
     "objektiv": "35mm, sekély mélységélesség",

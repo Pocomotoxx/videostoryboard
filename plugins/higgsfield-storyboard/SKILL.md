@@ -145,6 +145,20 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" set-tool image_to_video "<esz
 
 Mindig a `next` mondja meg, mi jön. Egy réteg befejezése után **állj meg, és kérj jóváhagyást**. Ne haladj tovább magadtól, akkor sem, ha nyilvánvalónak tűnik a folytatás.
 
+### Hogyan kérj jóváhagyást
+
+Ne ömlesztve tedd le az egészet azzal, hogy „megfelel?". Vedd végig **jelenetenként, egyesével**, és minden jelenetnél ugyanazt az öt lehetőséget kínáld fel:
+
+1. **Elfogadom** — mehet a következő
+2. **Igazítás** — apró módosítás a jelenet paraméterein, újragenerálás nélkül
+3. **Újragenerálás** — a felhasználó megmondja, mi a baj, és abból lesz a javítás alapja
+4. **Megjelölöm** — később térünk vissza rá, most menjünk tovább
+5. **Kihagyom** — ez a jelenet kimarad a videóból
+
+A negyedik és az ötödik azért fontos, hogy a felhasználó ne akadjon el egyetlen problémás jelenetnél. A megjelölteket a végén vedd elő újra, mielőtt a következő rétegbe lépnétek.
+
+Amikor újragenerálást kér, az indokot **szó szerint írd bele** az elutasításba, mert abból dolgozol a következő körben. A „nem tetszik" nem indok — kérdezz vissza, mi konkrétan.
+
 Jóváhagyás rögzítése:
 
 ```bash
@@ -178,6 +192,12 @@ A **reklám** jelenet a Marketing Studio ága: feltöltött termékkép, egy ava
 
 A két típust ne keverd egy jeleneten belül. Egy projektben viszont megférnek egymás mellett.
 
+### Arculat
+
+A `look.brand` blokkban rögzítsd az ügyfél arculatát: elsődleges szín, szövegszín, betűtípus, logó. Ez nem a generálásnak szól — az AI-modellek a márkaszínt sem tartják meg megbízhatóan —, hanem az utómunkának: a záróképnek, a feliratoknak és a szöveges rátéteknek. Így több videón át egységes marad a megjelenés.
+
+A **logót soha ne generáltasd**, hanem utómunkában helyezd rá. Ez a `continuity.md` szabálya, és arculatnál különösen érvényes: a torzított logó az egyetlen hiba, amit az ügyfél biztosan kiszúr.
+
 ### Folytonosság
 
 Karakter- és stílusfolytonosságról a `references/continuity.md` szól. Ezt a `look` réteg előtt kötelező elolvasni. Konzisztens szereplő nélkül a többjelenetes videó használhatatlan, és ezen a ponton szokott elhasalni a munka.
@@ -201,6 +221,12 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/assemble.py" --project . --aspect 9:16
 ```
 
 Az összefűzés helyben fut ffmpeggel, nem az MCP-n keresztül. A `check-assembly` ellenőrzi, hogy minden jelenet jóváhagyott és letöltött állapotban van-e.
+
+**Felirat és hangerő.** A felirat ráégethető a képre egy SRT-fájlból, a `--subtitles` kapcsolóval — a méretét a script a képarányhoz igazítja, tehát 16:9-ben és 9:16-ban is arányos marad. A hangerőt alapból egységesíti is: enélkül a jelenetek hangereje ugrál, mert minden klip külön generálásból származik. Ezt a `--no-loudnorm` kapcsolja ki, ha valamiért nem kell.
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/assemble.py" --project . --aspect 9:16 --subtitles felirat.srt --music zene.m4a
+```
 
 **Képarányváltásnál figyelj.** Az `assemble.py` egyszerűen levágja a kép szélét, ami 16:9-ből 9:16-ba váltva fontos tartalmat vághat le — feliratot, a szereplő fejét, a terméket. Ha ez fenyeget, a platform tartalomtudatos képarányváltó munkafolyamata a jobb megoldás, lásd `references/cli.md`. Az kreditbe kerül, a helyi vágás nem, ezért előbb nézd meg a helyi eredményt, és csak akkor válts, ha tényleg romlott.
 
