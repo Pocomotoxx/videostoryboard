@@ -56,6 +56,17 @@ készlet. A teljes eszközláncát nem vettük át, mert az külön infrastrukt�
 a jelenetenkénti, rögzített válaszlehetőségekkel dolgozó átnézési kör. Az arculati
 profil ötlete szintén innen származik. MIT-licenc alatt érhető el.
 
+## bradautomates/claude-video (MIT)
+
+https://github.com/bradautomates/claude-video
+
+Önálló plugin, ami videót tölt le, képkockákat ment ki és feliratot nyer ki, hogy a
+modell meg tudja nézni a videót. **Ebből semmit nem másoltunk**, mert karbantartott,
+külön telepíthető projekt — a rendszerünk csak hivatkozik rá, referenciavideók
+elemzéséhez. A gondolat viszont, hogy a modellnek látnia kell a videót, innen jött:
+a saját kimenetünk ellenőrzésére a `scripts/frames.py` készült, önálló megvalósításban,
+csak ffmpegre támaszkodva.
+
 ## Licenc nélküli források
 
 Két további nyilvános projektet is átnéztünk a tervezés során:

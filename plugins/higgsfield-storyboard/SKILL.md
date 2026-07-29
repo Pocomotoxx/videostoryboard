@@ -29,7 +29,7 @@ Ha ez nem nulla kilépési kóddal tér vissza, a hívás tilos. Nincs kivétel,
 
 | # | Réteg | Node | Költség | Mit hagy jóvá az ügyfél |
 |---|-------|------|---------|--------------------------|
-| 0 | Brief | `brief` | 0 | üzenet, célcsoport, hossz, felhasználási hely |
+| 0 | Brief | `brief` | 0 | üzenet, célcsoport, hossz, felhasználási hely, referenciák |
 | 1 | Kezelés | `treatment` | 0 | dramaturgia, hangnem, ív |
 | 2 | Jelenetlista | `shotlist` | 0 | jelenetszám, gépállások, időzítés |
 | 3 | Látvány és karakter | `look` | alacsony | stíluskód, paletta, Soul-karakterek |
@@ -48,6 +48,14 @@ A 0–2. réteg ingyenes. Ha itt esik szét a projekt, semmit nem vesztettél. A
 A `project.py` build-rendszerként kezeli a projektet. Minden node tárolja a bemeneteinek ujjlenyomatát. Ha egy réteget módosítasz, az összes ráépülő node automatikusan `stale` állapotba kerül, és újra jóváhagyást igényel. Ha az ügyfél a hetedik jelenet kezdőkockáját visszadobja, a hozzá tartozó mozgókép és az összefűzés is elavul, az első hat jelenet viszont érintetlen marad. Soha ne kerüld meg ezt kézi státuszírással.
 
 ## Munkamenet
+
+### Referenciavideók a briefhez
+
+Ha a felhasználó egy meglévő videóra hivatkozik — versenytárs hirdetése, „ilyet szeretnék" —, azt érdemes ténylegesen megnézni, nem a leírásából dolgozni. Helyi fájlból a `frames.py` kockákat ment ki, amiket `Read` hívással végignézel.
+
+Webes videóhoz külön eszköz kell, ami letölti és a feliratot is kinyeri. Erre a `claude-video` nevű plugin való (`/watch` paranccsal), ami külön telepíthető. **Nem előfeltétel** — ha nincs meg, kérd meg a felhasználót, hogy mondja el vagy mutassa meg, mi tetszik neki a referenciában.
+
+Amit a referenciából kinyersz, az a brief része: milyen a nyitóhorog, milyen hosszúak a vágások, milyen a hangnem. A képi világ szó szerinti másolása viszont jogi kockázat, ügyfélmunkában kerüld — erről a `continuity.md` szól.
 
 ### Első indulás: a Higgsfield MCP bekötése
 
@@ -144,6 +152,20 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" set-tool image_to_video "<esz
 ### Rétegenkénti haladás
 
 Mindig a `next` mondja meg, mi jön. Egy réteg befejezése után **állj meg, és kérj jóváhagyást**. Ne haladj tovább magadtól, akkor sem, ha nyilvánvalónak tűnik a folytatás.
+
+### Nézd meg te is, mielőtt megmutatod
+
+Az állóképeket `Read` hívással közvetlenül meg tudod nézni. A **mozgóképeket nem** — abból előbb képkockákat kell kimenteni:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/frames.py" shots/s003.mp4 --db 6
+```
+
+A kimentett kockákat nézd végig `Read` hívással, és vesd össze a `references/hibamintak.md` listájával: stimmel-e a szereplő, a kéz, a ruha, nincs-e olvashatatlan szöveg a háttérben, azt csinálja-e, amit a prompt kért.
+
+**Ha nyilvánvaló hibát látsz, ne tedd a felhasználó elé jóváhagyásra.** Mondd meg, mit látsz, és javasolj javítást. A jóváhagyás az ő döntése, de az ő idejét ne olyasmire fordítsd, amit magad is kiszűrsz.
+
+Ez nem helyettesíti az emberi ellenőrzést. A folytonosságot, a márkahangot és azt, hogy az anyag jó-e az ügyfélnek, továbbra is ember dönti el.
 
 ### Hogyan kérj jóváhagyást
 
