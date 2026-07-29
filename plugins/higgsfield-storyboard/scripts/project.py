@@ -106,6 +106,7 @@ def load_config():
     c.setdefault("costs", {})
     c.setdefault("tools", {})
     c.setdefault("models", {})
+    c.setdefault("cli", None)          # "van" | "nincs" — felderítéssel, nem kérdezéssel
     return c
 
 
@@ -125,6 +126,8 @@ def missing_config(c):
     miss += [f"cost.{k}" for k in COST_KEYS if c["costs"].get(k) is None]
     miss += [f"tool.{r}" for r in TOOL_ROLES if not c["tools"].get(r)]
     miss += [f"model.{r}" for r in ("image", "video") if not c["models"].get(r)]
+    if not c.get("cli"):
+        miss.append("cli")
     return miss
 
 
@@ -257,6 +260,8 @@ def cmd_config_show(args):
     print(f"  ({CONFIG})\n")
     print(f"  Előfizetési csomag      {c['plan'] or 'HIÁNYZIK'}")
     print(f"  Havi kredit             {c['monthly_credits'] or 'HIÁNYZIK'}")
+    print(f"  Parancssori eszköz      {c.get('cli') or 'HIÁNYZIK'}"
+          f"{'  (nem kötelező, MCP-vel is megy)' if c.get('cli') == 'nincs' else ''}")
     print("\n  Kreditárak")
     for k in COST_KEYS:
         v = c["costs"].get(k)
@@ -279,7 +284,11 @@ def cmd_config_show(args):
 def cmd_config_set(args):
     c = load_config()
     key, val = args.key, args.value
-    if key == "plan":
+    if key == "cli":
+        if val not in ("van", "nincs"):
+            die("a cli értéke csak 'van' vagy 'nincs' lehet")
+        c["cli"] = val
+    elif key == "plan":
         c["plan"] = val
     elif key == "monthly_credits":
         c["monthly_credits"] = int(val)

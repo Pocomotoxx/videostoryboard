@@ -18,6 +18,11 @@ Claude Code-ban, egyszer:
 Utána `/reload-plugins`, és a skill elérhető `higgsfield-storyboard` néven. Frissítés
 később `/plugin marketplace update`, majd `/plugin update higgsfield-storyboard`.
 
+## Átadás a felhasználónak
+
+Az `ATADAS.md` egy nem technikai nyelvű, bemásolható indulási útmutató annak, aki
+használni fogja a rendszert.
+
 ## Előfeltételek
 
 - **Python 3** — macOS és Linux: `python3`; Windowson `python`, mert ott a `python3`

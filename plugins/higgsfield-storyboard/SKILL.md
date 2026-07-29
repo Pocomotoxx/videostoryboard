@@ -61,7 +61,16 @@ Ezután a felhasználó a `/mcp` paranccsal, a saját böngészőjében lép be 
 
 **Jelszót, API-kulcsot vagy más belépési adatot soha ne kérj tőle, és ne is vegyél át.** A belépés OAuth-tal, a böngészőben történik, a jelszó nem megy át a beszélgetésen. Ha a felhasználó mégis beírná, figyelmeztesd, hogy erre nincs szükség, és irányítsd a `/mcp` parancshoz. Ugyanez vonatkozik a `cloud.higgsfield.ai` API-kulcsaira: a hivatalos MCP-szerverhez nem kellenek.
 
-**A parancssori eszköz is javasolt, az MCP mellé.** Több dolog csak ott van meg: modellséma-lekérdezés, előzetes árszámítás, szereplőtanítás, tartalomtudatos képarányváltás. A telepítése minden rendszeren `npm install -g @higgsfield/cli`, belépés `higgsfield auth login`. A részletek a `references/cli.md` fájlban. Ha egy lépéshez az MCP-n nem találsz eszközt, előbb ott nézd meg, mielőtt kerülőutat terveznél.
+**A parancssori eszköz hasznos, de nem kötelező.** A folyamat az MCP-vel önmagában is végigvihető. Ellenőrizd, van-e (`higgsfield version`), és rögzítsd az eredményt:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set cli van
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set cli nincs
+```
+
+Ha nincs, **ne erőltesd a telepítést**, és semmiképp ne tedd feltételévé a munkakezdésnek. Ajánld fel egyszer, egy mondatban, hogy `npm install -g @higgsfield/cli` paranccsal telepíthető (Node.js kell hozzá), és ha a felhasználó nem kéri, dolgozz nélküle. A parancsokat amúgy is te futtatod, nem ő — neki soha nem kell parancssort használnia.
+
+Amit CLI nélkül másképp kell csinálni, azt a `references/cli.md` végén lévő táblázat sorolja fel. A lényeg: a kilenc réteg és a reklámág teljesen működik MCP-vel, a CLI csak kényelmesebbé teszi.
 
 Belépés után kérd meg, hogy a Higgsfield-fiókjában nézze meg, melyik egyenlegből vont le az első generálás — az előfizetése havi kreditjéből vagy külön fejlesztői API-keretből. A költségbecslés csak akkor lesz valós, ha a megfelelő keretet mérjük.
 

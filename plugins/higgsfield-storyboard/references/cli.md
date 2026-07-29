@@ -100,6 +100,30 @@ Három helyen: a Marketing Studio modelljeinél, a `voice-change` és a `dubbing
 munkafolyamatnál. Ezeknél a `transactions` mondja meg utólag, mi ment el. Minden más
 esetben a `generate cost` az előírt lépés generálás előtt.
 
+## Ha nincs parancssori eszköz
+
+**A folyamat enélkül is végigvihető.** A parancssori eszköz kényelmi réteg, nem
+előfeltétel. Ne tedd a munkakezdés feltételévé, és ne kérd a felhasználót, hogy
+parancsokat gépeljen be — a parancsokat te futtatod.
+
+| Feladat | CLI-vel | CLI nélkül, MCP-n |
+|---|---|---|
+| Modellséma | `model get` | `models_explore(action="get", ...)` |
+| Árbecslés | `generate cost` | `get_cost: true` a generáló hívásban |
+| Egyenleg | `account status` | `balance` |
+| Kreditmozgások | `account transactions` | `transactions` |
+| Generálás | `generate create` | `generate_image` / `generate_video` |
+| Fájlfeltöltés | `upload` | `media_import_url` vagy a feltöltő eszköz |
+| Szereplőtanítás | `soul-id create` | felderítéssel kell megkeresni a betanító eszközt |
+| Képarányváltás | `generate workflow reframe` | helyi vágás az `assemble.py`-jal |
+| Narráció, szinkron | `generate workflow` | ha nincs MCP-eszköz, külső hang és helyi keverés |
+
+Két helyen érdemes szólni a felhasználónak, ha nincs CLI. A **szereplőtanítás** nélkül a
+folytonosságot referenciaképpel és kockaláncolással kell megoldani, ahogy a
+`continuity.md` írja — kevés jelenetnél ez amúgy is elég. A **képarányváltásnál** pedig a
+helyi vágás levághat fontos tartalmat; ilyenkor inkább tervezz eleve két képarányra, vagy
+komponálj biztonságos középre.
+
 ---
 
 *A parancsok és azonosítók forrása a [higgsfield-ai/cli](https://github.com/higgsfield-ai/cli)
