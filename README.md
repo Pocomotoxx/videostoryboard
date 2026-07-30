@@ -17,7 +17,7 @@ Claude Code-ban, egyszer:
 
 Utána `/reload-plugins`. A folyamat a `/higgsfield-storyboard:video` paranccsal indul —
 egy meglévő projekt könyvtárában ugyanez folytatja a félbehagyott munkát. Frissítés
-később `/plugin marketplace update`, majd `/plugin update higgsfield-storyboard`.
+később `/plugin marketplace update`, majd `/plugin update higgsfield-storyboard@videostoryboard`.
 
 ## Átadás a felhasználónak
 

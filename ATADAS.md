@@ -62,8 +62,20 @@ Végül ezt:
 /reload-plugins
 ```
 
-Ennyi. Ha később frissítés jön, ugyanide a `/plugin marketplace update`, majd a
-`/plugin update higgsfield-storyboard` hozza le.
+Ennyi.
+
+**Ha később frissítés jön**, két sor hozza le, ebben a sorrendben:
+
+```
+/plugin marketplace update videostoryboard
+```
+
+```
+/plugin update higgsfield-storyboard@videostoryboard
+```
+
+A második parancsnál a `@videostoryboard` rész **kötelező** — nélküle azt írja, hogy nem
+találja. Frissítés után indítsd újra az alkalmazást.
 
 ## 2. A Higgsfield összekötése
 
