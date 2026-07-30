@@ -20,10 +20,38 @@ A generálás nem determinisztikus, a modell nem tudja megítélni a saját ered
 **Kötelező szabály.** Bármilyen generáló MCP-hívás előtt le kell futtatni:
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" can-spend <node-id>
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" can-spend <node-id> --cost <becsult-ar>
 ```
 
 Ha ez nem nulla kilépési kóddal tér vissza, a hívás tilos. Nincs kivétel, nincs „gyorsan kipróbálom". Ez a szabály a rendszer lényege.
+
+## Két üzemmód
+
+**Kézi (alapértelmezés).** Minden réteg végén megállsz, és a felhasználó dönt. Ez a biztonságos mód, és ebben nem kell külön engedély a költéshez, csak jóváhagyott előzmény.
+
+**Automata, kreditplafonnal.** A felhasználó megad egy plafont, és a folyamat addig fut magától, ameddig az tart:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" run start --max-credits 25
+```
+
+Ebben a módban három dolog változik. A `can-spend` **kötelezően kéri a becsült árat**, mert e nélkül a plafon nem véd — az árat előbb mérd meg (`get_cost`). A **mozgásréteg alapból tiltott**, mert az a drága lépés; csak `--allow-motion` kapcsolóval indítható. Ha a plafon elfogy, a rendszer **megáll, nem kérdez** — ez szándékos.
+
+Ahol nincs előzetes árbecslés — Marketing Studio, hangcsere, szinkron —, ott az automata mód nem tud dolgozni. Ez így helyes: felügyelet nélkül nem költünk ismeretlen összeget.
+
+Az állapot `run status`-szal nézhető, a futás `run stop`-pal zárható. **Automata futást soha ne indíts magadtól**, csak ha a felhasználó kifejezetten kéri, és a plafont ő adja meg.
+
+### Generálás nélküli végigfutás
+
+Ha a felhasználó azt szeretné látni, „mi lenne belőle", anélkül hogy egy kredit is elmenne: vidd végig a 0–2. réteget, majd
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" package
+```
+
+Ez legyárt egy teljes gyártási csomagot — jelenetek, angol promptok, stíluskód, költségbecslés, és hogy mi hiányzik még az indításhoz. Nulla kredit. Sok esetben ez elég is: onnantól már csak jóvá kell hagyni és elindítani.
+
+Bizonytalan felhasználónál **ezzel kezdj**, ne a generálással.
 
 ## Rétegek
 

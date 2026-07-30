@@ -433,7 +433,71 @@ def cmd_can_spend(args):
         print(f"TILOS a generálás. Jóváhagyatlan vagy elévült előzmény: {', '.join(bad)}",
               file=sys.stderr)
         sys.exit(1)
+
+    # Automata futásnál a jóváhagyott előzmény nem elég: kell a kreditplafon is.
+    run = state.get("run") or {}
+    if run.get("active"):
+        marad = run["max_credits"] - run["spent"]
+        if args.node.startswith("motion:") and not run.get("allow_motion"):
+            print(f"TILOS. Automata futásban a mozgásréteg le van tiltva. Ez a drága "
+                  f"lépés, itt emberi jóváhagyás kell. Állítsd le a futást "
+                  f"(run stop), vagy indítsd --allow-motion kapcsolóval.", file=sys.stderr)
+            sys.exit(1)
+        if args.cost is None:
+            print(f"TILOS. Automata futásban a becsült árat meg kell adni "
+                  f"(--cost), különben a plafon nem véd. Ha az ár nem kérdezhető le "
+                  f"előre — például a Marketing Studiónál —, akkor ezt a lépést "
+                  f"nem szabad felügyelet nélkül futtatni.", file=sys.stderr)
+            sys.exit(1)
+        if args.cost > marad:
+            print(f"TILOS. A lépés {args.cost} kredit, a futásból {marad} maradt "
+                  f"({run['spent']}/{run['max_credits']} elköltve). A futás itt megáll.",
+                  file=sys.stderr)
+            sys.exit(1)
+        print(f"Mehet: {args.node}  [{args.cost} kredit, marad {marad - args.cost}]")
+        return
     print(f"Mehet: {args.node}")
+
+
+def cmd_run_start(args):
+    state = load(args.project)
+    if args.max_credits <= 0:
+        die("a plafon pozitív legyen")
+    state["run"] = {
+        "active": True,
+        "max_credits": args.max_credits,
+        "spent": 0,
+        "allow_motion": bool(args.allow_motion),
+        "started": time.strftime("%Y-%m-%d %H:%M"),
+    }
+    save(args.project, state)
+    mozgas = "engedélyezve" if args.allow_motion else "letiltva"
+    print(f"Automata futás elindítva. Plafon: {args.max_credits} kredit. "
+          f"Mozgásréteg: {mozgas}.")
+    print("A futás magától megáll, ha a plafon elfogy. Leállítás: run stop")
+
+
+def cmd_run_status(args):
+    run = (load(args.project).get("run") or {})
+    if not run.get("active"):
+        print("\n  Nincs futó automata menet. A kiadások emberi jóváhagyáshoz kötöttek.\n")
+        return
+    print(f"\n  Automata futás — indult {run['started']}")
+    print(f"  Elköltve {run['spent']} / {run['max_credits']} kredit, "
+          f"marad {run['max_credits'] - run['spent']}")
+    print(f"  Mozgásréteg: {'engedélyezve' if run.get('allow_motion') else 'letiltva'}\n")
+
+
+def cmd_run_stop(args):
+    state = load(args.project)
+    run = state.get("run") or {}
+    if not run.get("active"):
+        print("Nem volt futó automata menet.")
+        return
+    run["active"] = False
+    state["run"] = run
+    save(args.project, state)
+    print(f"Automata futás leállítva. Ebben a menetben {run['spent']} kredit ment el.")
 
 
 def cmd_spend(args):
@@ -444,8 +508,17 @@ def cmd_spend(args):
         "ts": time.strftime("%Y-%m-%d %H:%M"), "node": args.node,
         "credits": args.credits, "note": args.note or "",
     })
+    run = state.get("run") or {}
+    if run.get("active"):
+        run["spent"] += args.credits
+        state["run"] = run
     save(args.project, state)
     print(f"Rögzítve: {args.credits} kredit ({args.node})")
+    if run.get("active"):
+        marad = run["max_credits"] - run["spent"]
+        print(f"Automata futás: {run['spent']}/{run['max_credits']} kredit, marad {marad}.")
+        if marad <= 0:
+            print("A plafon elfogyott, a következő lépés már nem indulhat.")
 
 
 def cmd_estimate(args):
@@ -500,6 +573,127 @@ def cmd_report(args):
     for e in state["spend_log"]:
         print(f"  {e['ts']}  {e['credits']:>5}  {e['node']}  {e['note']}")
     print(f"\n  Összesen: {sum(e['credits'] for e in state['spend_log'])} kredit\n")
+
+
+def cmd_package(args):
+    """Gyártásra kész csomag legyártása, egyetlen kredit elköltése nélkül.
+
+    Ez a generálás nélküli végigfutás kimenete: minden megvan, ami a
+    generáláshoz kell, csak maga a generálás nincs meg.
+    """
+    state = sync(args.project, load(args.project))
+    board = load_board(args.project)
+    shots = board.get("shots", [])
+    if not shots:
+        die("üres a jelenetlista, előbb a shotlist réteget kell megcsinálni")
+
+    look = board.get("look", {})
+    c = state["costs"]
+    filmes = [s for s in shots if s.get("tipus", "filmes") == "filmes"]
+    reklam = [s for s in shots if s.get("tipus") == "reklam"]
+    ossz = sum(s.get("duration_s", 5) for s in shots)
+
+    sorok = []
+    add = sorok.append
+    add(f"# {state['name']} — gyártási csomag\n")
+    add(f"Készült: {time.strftime('%Y-%m-%d %H:%M')}. "
+        f"Ez a csomag generálás nélkül készült, kreditbe nem került.\n")
+
+    add("## Áttekintés\n")
+    add(f"- Jelenet: {len(shots)} db ({len(filmes)} filmes, {len(reklam)} reklám)")
+    add(f"- Teljes hossz: {ossz} másodperc")
+    if state.get("models", {}).get("image"):
+        add(f"- Tervezett modellek: kép `{state['models']['image']}`, "
+            f"videó `{state['models'].get('video') or '?'}`")
+    add("")
+
+    if look.get("stilus"):
+        add("## Stíluskód\n")
+        add("Ez minden angol promptba szó szerint bekerül, változatlanul.\n")
+        add(f"> {look.get('stilus')}")
+        if look.get("paletta"):
+            add(f">\n> Paletta: {look.get('paletta')}")
+        add("")
+
+    if look.get("characters"):
+        add("## Szereplők\n")
+        for k in look["characters"]:
+            allapot = "betanítva" if k.get("soul_id") else "MÉG NINCS BETANÍTVA"
+            add(f"- **{k.get('id')}** — {k.get('leiras', '')} ({allapot})")
+        add("")
+
+    add("## Jelenetek\n")
+    add("| # | Típus | Hossz | Gépállás | Leírás |")
+    add("|---|---|---|---|---|")
+    for s in shots:
+        add(f"| {s.get('id')} | {s.get('tipus', 'filmes')} | {s.get('duration_s', 5)} mp "
+            f"| {s.get('shot_size') or s.get('preset') or '—'} "
+            f"| {(s.get('leiras') or '').replace('|', '/')} |")
+    add("")
+
+    add("## Promptok\n")
+    for s in shots:
+        add(f"### {s.get('id')} — {s.get('duration_s', 5)} mp\n")
+        if s.get("tipus") == "reklam":
+            add(f"- Formátum: `{s.get('preset')}`")
+            add(f"- Termékkép: `{s.get('termekkep')}`")
+            av = s.get("avatar")
+            if isinstance(av, dict):
+                add(f"- Avatár: {av.get('tipus', '?')} — {av.get('id') or av.get('leiras') or '?'}")
+            else:
+                add(f"- Avatár: {av or 'nincs megadva'}")
+            if s.get("hook_id"):
+                add(f"- Nyitóhook: {s['hook_id']}")
+        else:
+            add(f"- Kameramozgás: {s.get('camera_move', '—')}")
+            if s.get("continuity_from"):
+                add(f"- Folytonosság innen: {s['continuity_from']}")
+        add(f"\n```\n{s.get('prompt_en', '(hiányzik)')}\n```\n")
+
+    add("## Költségbecslés\n")
+    img = len(filmes) * c["image"]
+    vid = sum(s.get("duration_s", 5) for s in filmes) * c["video_per_second"]
+    train = len(look.get("characters", [])) * c["character_train"]
+    alap = img + vid + train
+    add(f"- Karaktertanítás: {train} kredit")
+    add(f"- Kezdőkockák: {img} kredit")
+    add(f"- Mozgókép: {vid} kredit")
+    add(f"- **Alapösszeg: {alap} kredit**, 40% újrafuttatási tartalékkal "
+        f"{int(alap * 1.4)} kredit")
+    if reklam:
+        add(f"- Ezen felül {len(reklam)} reklámjelenet, amire a platform nem ad "
+            f"előzetes árat — a költségük csak utólag derül ki.")
+    if not state.get("costs_calibrated", False):
+        add("\n**Figyelem:** a kreditárak nincsenek kalibrálva, ez a becslés kitalált "
+            "alapértékekkel készült. Ügyfélnek ne add oda.")
+    add("")
+
+    add("## Mi kell a gyártás indításához\n")
+    hianyzik = []
+    if not state.get("costs_calibrated", False):
+        hianyzik.append("a kreditárak kalibrálása")
+    for k in look.get("characters", []):
+        if not k.get("soul_id"):
+            hianyzik.append(f"a(z) {k.get('id')} szereplő betanítása")
+    for s in shots:
+        if not s.get("prompt_en"):
+            hianyzik.append(f"{s.get('id')}: hiányzik az angol prompt")
+        if s.get("tipus") == "reklam" and not s.get("termekkep"):
+            hianyzik.append(f"{s.get('id')}: hiányzik a termékkép")
+    if hianyzik:
+        for h in hianyzik:
+            add(f"- {h}")
+    else:
+        add("Minden megvan. A gyártás indítható.")
+    add("")
+
+    ki = os.path.join(args.project, "output", "gyartasi-csomag.md")
+    os.makedirs(os.path.dirname(ki), exist_ok=True)
+    with open(ki, "w", encoding="utf-8") as f:
+        f.write("\n".join(sorok))
+    print(f"\n  Gyártási csomag: {ki}")
+    print(f"  {len(shots)} jelenet, {ossz} mp, becsült {int(alap * 1.4)} kredit")
+    print(f"  Elköltött kredit: 0\n")
 
 
 def cmd_set_tool(args):
@@ -615,9 +809,25 @@ def main():
     sub.add_parser("check-shots").set_defaults(f=cmd_check_shots)
     sub.add_parser("check-assembly").set_defaults(f=cmd_check_assembly)
 
-    for name, fn in (("approve", cmd_approve), ("pending", cmd_pending),
-                     ("can-spend", cmd_can_spend)):
+    sub.add_parser("package", help="gyártási csomag generálás nélkül").set_defaults(f=cmd_package)
+
+    for name, fn in (("approve", cmd_approve), ("pending", cmd_pending)):
         s = sub.add_parser(name); s.add_argument("node"); s.set_defaults(f=fn)
+
+    s = sub.add_parser("can-spend"); s.add_argument("node")
+    s.add_argument("--cost", type=int, default=None,
+                   help="a lépés becsült ára; automata futásban kötelező")
+    s.set_defaults(f=cmd_can_spend)
+
+    run = sub.add_parser("run", help="automata futás kreditplafonnal")
+    runsub = run.add_subparsers(dest="runcmd", required=True)
+    s = runsub.add_parser("start")
+    s.add_argument("--max-credits", type=int, required=True, help="kreditplafon a futásra")
+    s.add_argument("--allow-motion", action="store_true",
+                   help="a drága mozgásréteg engedélyezése (alapból tiltott)")
+    s.set_defaults(f=cmd_run_start)
+    runsub.add_parser("status").set_defaults(f=cmd_run_status)
+    runsub.add_parser("stop").set_defaults(f=cmd_run_stop)
 
     s = sub.add_parser("reject"); s.add_argument("node")
     s.add_argument("--note", default=""); s.set_defaults(f=cmd_reject)
