@@ -30,6 +30,9 @@ BOARD = "storyboard.json"
 # veszi az új projekt alapértékeit.
 CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".higgsfield-storyboard")
 CONFIG = os.path.join(CONFIG_DIR, "config.json")
+# Ügyfélprofilok: egyszer jóváhagyott stíluskód, arculat és betanított szereplők,
+# amiket az adott ügyfél minden további videója újrahasznál.
+UGYFELEK = os.path.join(CONFIG_DIR, "ugyfelek")
 
 # Kiindulási kreditköltségek. NEM valós árak, csak azért vannak, hogy a
 # projekt kalibrálás nélkül is elinduljon. A tényleges árak modellenként és
@@ -343,12 +346,26 @@ def cmd_init(args):
         p = os.path.join(root, f)
         if not os.path.exists(p):
             open(p, "w", encoding="utf-8").write(txt)
+    profil = load_ugyfel(args.ugyfel) if args.ugyfel else None
+    if profil:
+        state["ugyfel"] = profil.get("nev")
     board = os.path.join(root, BOARD)
     if not os.path.exists(board):
-        json.dump({"look": {}, "shots": [], "assembly": {}, "sound": {}, "finish": {}},
+        # A profil látványa bemásolódik, nem hivatkozásként marad. Így ha az
+        # ügyfél később arculatot vált, a régi munkák érintetlenek maradnak.
+        json.dump({"look": (profil["look"] if profil else {}),
+                   "shots": [], "assembly": {}, "sound": {}, "finish": {}},
                   open(board, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     save(root, sync(root, state))
     print(f"Projekt létrehozva: {root}")
+    if profil:
+        kar = profil["look"].get("characters", [])
+        bet = [k for k in kar if k.get("soul_id")]
+        print(f"Ügyfélprofil betöltve: {profil.get('nev')}. A látvány készen van.")
+        if bet:
+            print(f"  {len(bet)} betanított szereplő átvéve, újratanítás nem kell.")
+        print("  A look réteg jóváhagyható, ha a felhasználó megerősíti, hogy ehhez "
+              "a munkához is ez a stílus kell.")
     miss = missing_config(cfg)
     if miss:
         print(f"FIGYELEM: a telepítés hiányos ({', '.join(miss)}). "
@@ -582,6 +599,106 @@ def cmd_report(args):
     print(f"\n  Összesen: {sum(e['credits'] for e in state['spend_log'])} kredit\n")
 
 
+def ugyfel_ut(nev):
+    biztonsagos = "".join(c for c in nev.lower() if c.isalnum() or c in "-_")
+    if not biztonsagos:
+        die(f"értelmezhetetlen ügyfélnév: {nev!r}")
+    return os.path.join(UGYFELEK, f"{biztonsagos}.json")
+
+
+def load_ugyfel(nev):
+    p = ugyfel_ut(nev)
+    if not os.path.exists(p):
+        die(f"nincs ilyen ügyfélprofil: {nev}. Lista: project.py ugyfel list")
+    with open(p, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def cmd_ugyfel_add(args):
+    """Ügyfélprofil létrehozása, lehetőleg egy már jóváhagyott projektből.
+
+    A profilt nem kézzel írjuk: egy elkészült munka jóváhagyott látványát
+    léptetjük elő újrahasznosítható profillá.
+    """
+    p = ugyfel_ut(args.nev)
+    if os.path.exists(p) and not args.felulir:
+        die(f"már létezik: {p}. Felülíráshoz: --felulir")
+
+    if args.forras:
+        board = load_board(args.forras)
+        look = board.get("look", {})
+        if not look:
+            die(f"a(z) {args.forras} projektben nincs kitöltött look réteg")
+        allapot = sync(args.forras, load(args.forras))
+        if effective(allapot, "look") != "approved":
+            die("a forrásprojekt look rétege nincs jóváhagyva. Ügyfélprofilba csak "
+                "jóváhagyott látvány kerülhet.")
+        profil = {
+            "nev": args.nev,
+            "keszult": time.strftime("%Y-%m-%d %H:%M"),
+            "forras_projekt": os.path.abspath(args.forras),
+            "look": look,
+        }
+    else:
+        profil = {
+            "nev": args.nev,
+            "keszult": time.strftime("%Y-%m-%d %H:%M"),
+            "forras_projekt": None,
+            "look": {"brand": {}, "stilus": "", "paletta": "", "objektiv": "",
+                     "characters": []},
+        }
+
+    os.makedirs(UGYFELEK, exist_ok=True)
+    with open(p, "w", encoding="utf-8") as f:
+        json.dump(profil, f, ensure_ascii=False, indent=2)
+    print(f"Ügyfélprofil mentve: {p}")
+    kar = profil["look"].get("characters", [])
+    betanitott = [k for k in kar if k.get("soul_id")]
+    if betanitott:
+        print(f"  {len(betanitott)} betanított szereplő átvéve — ezeket a további "
+              f"munkáknál nem kell újratanítani.")
+    if not args.forras:
+        print("  Üres profil készült. Töltsd ki a fájlt, vagy hozd létre inkább egy "
+              "jóváhagyott projektből a --forras kapcsolóval.")
+
+
+def cmd_ugyfel_list(args):
+    if not os.path.isdir(UGYFELEK):
+        print("\n  Még nincs ügyfélprofil.\n")
+        return
+    fajlok = sorted(f for f in os.listdir(UGYFELEK) if f.endswith(".json"))
+    if not fajlok:
+        print("\n  Még nincs ügyfélprofil.\n")
+        return
+    print(f"\n  Ügyfélprofilok ({UGYFELEK})\n")
+    for f in fajlok:
+        with open(os.path.join(UGYFELEK, f), encoding="utf-8") as fp:
+            pr = json.load(fp)
+        kar = pr.get("look", {}).get("characters", [])
+        bet = sum(1 for k in kar if k.get("soul_id"))
+        print(f"    {pr.get('nev', f[:-5]):<24} {pr.get('keszult', '')}   "
+              f"{len(kar)} szereplő ({bet} betanítva)")
+    print()
+
+
+def cmd_ugyfel_show(args):
+    pr = load_ugyfel(args.nev)
+    look = pr.get("look", {})
+    print(f"\n  {pr.get('nev')} — készült {pr.get('keszult')}")
+    if pr.get("forras_projekt"):
+        print(f"  Forrás: {pr['forras_projekt']}")
+    print(f"\n  Stíluskód: {look.get('stilus') or '(üres)'}")
+    print(f"  Paletta:   {look.get('paletta') or '(üres)'}")
+    brand = look.get("brand") or {}
+    if brand:
+        print(f"  Arculat:   {brand.get('nev', '?')}, "
+              f"{brand.get('elsodleges_szin', '?')}, {brand.get('betutipus', '?')}")
+    for k in look.get("characters", []):
+        allapot = k.get("soul_id") or "NINCS BETANÍTVA"
+        print(f"    - {k.get('id')}: {allapot}")
+    print()
+
+
 def cmd_package(args):
     """Gyártásra kész csomag legyártása, egyetlen kredit elköltése nélkül.
 
@@ -808,7 +925,20 @@ def main():
     ap.add_argument("--project", default=".", help="projekt könyvtára")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    s = sub.add_parser("init"); s.add_argument("name"); s.set_defaults(f=cmd_init)
+    s = sub.add_parser("init"); s.add_argument("name")
+    s.add_argument("--ugyfel", default=None,
+                   help="ügyfélprofil neve: a látvány készen indul")
+    s.set_defaults(f=cmd_init)
+
+    ug = sub.add_parser("ugyfel", help="ügyfélprofilok kezelése")
+    ugsub = ug.add_subparsers(dest="ugyfelcmd", required=True)
+    s = ugsub.add_parser("add", help="profil létrehozása, lehetőleg kész projektből")
+    s.add_argument("nev")
+    s.add_argument("--forras", default=None, help="jóváhagyott projekt könyvtára")
+    s.add_argument("--felulir", action="store_true")
+    s.set_defaults(f=cmd_ugyfel_add)
+    ugsub.add_parser("list").set_defaults(f=cmd_ugyfel_list)
+    s = ugsub.add_parser("show"); s.add_argument("nev"); s.set_defaults(f=cmd_ugyfel_show)
     sub.add_parser("status").set_defaults(f=cmd_status)
     sub.add_parser("next").set_defaults(f=cmd_next)
     sub.add_parser("estimate").set_defaults(f=cmd_estimate)

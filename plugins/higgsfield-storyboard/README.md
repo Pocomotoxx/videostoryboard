@@ -28,6 +28,9 @@ references/vegso-ellenorzes.md      # hétpontos ellenőrzés leszállítás el�
 templates/storyboard.example.json   # a storyboard.json szerkezete, kitöltött mintával
 ```
 
+A gépszintű beállítások és az ügyfélprofilok a felhasználó könyvtárában élnek:
+`~/.higgsfield-storyboard/config.json` és `~/.higgsfield-storyboard/ugyfelek/*.json`.
+
 Ez a mappa csak a tudást tartalmazza. A konkrét munkák a `project.py init <nev>`
 paranccsal a saját munkakönyvtáradban keletkeznek (`brief.md`, `treatment.md`,
 `storyboard.json`, `project.json`, valamint `characters/`, `shots/`, `output/`,

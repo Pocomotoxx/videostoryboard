@@ -208,6 +208,26 @@ A **reklám** jelenet a Marketing Studio ága: feltöltött termékkép, egy ava
 
 A két típust ne keverd egy jeleneten belül. Egy projektben viszont megférnek egymás mellett.
 
+### Visszatérő ügyfél: profil
+
+Ha ugyanannak az ügyfélnek többedik videója készül, a látványt **ne találd ki újra**. Az első munka jóváhagyott látványából profil készíthető, amit minden további munka örököl:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" ugyfel add <ugyfelnev> --forras <projektkonyvtar>
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" ugyfel list
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" init "uj-munka" --ugyfel <ugyfelnev>
+```
+
+A profilba **csak jóváhagyott látvány kerülhet** — a script ezt ellenőrzi. Ez a lényeg: a stílust egyszer egy ember hagyta jóvá, onnantól a rendszer nem dönt, hanem ismétel.
+
+Az új projekt a stíluskóddal, a palettával, az arculattal és a **betanított szereplők azonosítóival** indul. Ez utóbbi kredites megtakarítás: a szereplőt nem kell újratanítani.
+
+A profil **bemásolódik** a projektbe, nem hivatkozásként marad. Ha az ügyfél később arculatot vált, a régi munkák érintetlenek maradnak — ugyanaz az elv, mint a kreditáraknál.
+
+Amikor profillal indul egy munka, a `look` réteg gyakorlatilag készen van. Ettől még **kérdezz rá**: „ugyanaz a stílus, mint az eddigieknél, jó?" — mert lehet, hogy ez a videó másik terméknek vagy másik célcsoportnak szól.
+
+Ha az ügyfél stílusa változik, a profilt írd felül (`--felulir`) egy újabb jóváhagyott projektből.
+
 ### Arculat
 
 A `look.brand` blokkban rögzítsd az ügyfél arculatát: elsődleges szín, szövegszín, betűtípus, logó. Ez nem a generálásnak szól — az AI-modellek a márkaszínt sem tartják meg megbízhatóan —, hanem az utómunkának: a záróképnek, a feliratoknak és a szöveges rátéteknek. Így több videón át egységes marad a megjelenés.
