@@ -100,6 +100,11 @@ Nem, sőt. A platformok a tömegtermelt és a jelöletlen mesterséges tartalmat
 Az elérést az hozza, ha valaki végignézi és megjegyzi, amit csináltál — heti három jó
 anyag többet ér napi tíznél.
 
+**Felhőben is futhatna, hogy ne kelljen bekapcsolva hagynom a gépet?**
+Sajnos nem. A felhős futásnál nincsenek ott a fájljaid, nincs ott a videóösszefűző, és a
+Higgsfield-kapcsolatod sem érhető el onnan. Nekünk a helyi futás kell — az viszont
+bekapcsolt, ébren lévő gépet igényel.
+
 **Miért nem futott le az éjszakai előkészítés?**
 Valószínűleg mert a gép aludt. Az időzített feladat csak bekapcsolt, ébren lévő gépen
 fut le. Ezért javasoljuk a reggeli időpontot a hajnali helyett.

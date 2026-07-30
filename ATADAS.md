@@ -156,6 +156,9 @@ megadott kis kerettel, és reggel már látod is, hogy fog kinézni.
 Egy dolgot tudni kell: **ez csak akkor fut le, ha a géped be van kapcsolva.** Lecsukott
 laptopon nem történik semmi. Ezért érdemesebb reggeli időpontot választani, mint hajnalit.
 
+A beállítás lépésről lépésre az `UTEMEZES.md` fájlban van. Ne kezdj bele, amíg nem
+készítettél legalább egy videót végig kézzel.
+
 ---
 
 ## Amit nem kell megcsinálnod
