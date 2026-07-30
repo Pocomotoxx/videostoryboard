@@ -75,6 +75,45 @@ bontva, az árral együtt, de egy kredit sem megy el. Ha tetszik, onnan indul a 
 
 ---
 
+## Hogyan dolgozz vele
+
+**Mondd el, mit szeretnél, a többit kérdezni fogja.** Nem kell előre kitalálnod a hosszt,
+a képarányt vagy a jelenetszámot. Egyszerre egy kérdést tesz fel, és mindig javasol
+valamit — ha rábólintasz, megy tovább. „Harminc másodpercet javaslok, függőlegesben,
+mert Instagramra megy. Jó lesz?"
+
+**Nem csak videót tud.** Képes posztot és karusszelt is készít, és ez fontos: **egy kép
+nagyságrenddel olcsóbb, mint egy videó.** Ha rendszeresen szeretnél posztolni, a képes
+tartalom a járható út, a videó pedig a kiemelt anyagoké. Mondd nyugodtan, hogy „ehhez
+inkább egy háromlapos karusszelt szeretnék".
+
+**Visszatérő ügyfélnél nem kell újrakezdeni.** Az első munka után elmentheted az ügyfél
+stílusát, és onnantól minden további videója ugyanúgy néz ki. Elég annyit mondanod:
+„mentsd el ezt a stílust az X ügyfélhez". A betanított szereplőket sem kell újra
+megcsinálni, ami komoly megtakarítás.
+
+**A szöveget is megírja.** A kész képhez vagy videóhoz kísérőszöveget, címet és
+hashtageket is ír, a kulcsszavaid alapján. Ehhez viszont tudnia kell, mire optimalizálsz
+— ha van kulcsszókutatásod, add oda neki.
+
+**A végén mindent egy mappába rak.** Kész videó a kért képarányokban, képek, felirat,
+kísérőszöveg, hashtagek. Onnan már csak fel kell töltened.
+
+## Ha rendszeresen posztolnál
+
+Nem kell minden reggel ötletelned. Felírsz előre egy listát a témákból, és a rendszer
+naponta elővesz egyet, és előkészíti. Mondd azt, hogy „szeretnék napi előkészítést", és
+végigvezet rajta.
+
+Kétféleképpen működhet, és **rákérdez, melyiket szeretnéd**: vagy teljesen ingyen
+elkészíti a tervet, és reggel te indítod a gyártást, vagy a képekig is elmegy egy általad
+megadott kis kerettel, és reggel már látod is, hogy fog kinézni.
+
+Egy dolgot tudni kell: **ez csak akkor fut le, ha a géped be van kapcsolva.** Lecsukott
+laptopon nem történik semmi. Ezért érdemesebb reggeli időpontot választani, mint hajnalit.
+
+---
+
 ## Amit nem kell megcsinálnod
 
 Van a Higgsfieldnek egy parancssori programja is. **Neked nem kell telepítened**, és
