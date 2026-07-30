@@ -112,7 +112,7 @@ fut le. Ezért javasoljuk a reggeli időpontot a hajnali helyett.
 ## Technika
 
 **Kell hozzá programozói tudás?**
-Nem. A telepítés négy lépés, a használat pedig beszélgetés. Parancsokat nem neked kell
+Nem. A telepítés öt lépés, a használat pedig beszélgetés. Parancsokat nem neked kell
 gépelned — azokat a rendszer futtatja.
 
 **Kell telepítenem a Higgsfield parancssori programját?**
