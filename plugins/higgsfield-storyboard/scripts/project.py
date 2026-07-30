@@ -355,7 +355,30 @@ def cmd_init(args):
         "nodes": {},
         "spend_log": [],
     }
-    for f, txt in (("brief.md", "# Brief\n\n"), ("treatment.md", "# Kezelés\n\n")):
+    BRIEF_VAZ = """# Brief
+
+## Mit akarunk elérni
+<!-- Egy mondatban: mi az üzenet, és mit tegyen a néző. -->
+
+## Kinek szól
+<!-- Célcsoport, és amit róla tudni kell. -->
+
+## Hol fut
+<!-- Felület, képarány, hossz. Ebből következik a formátum. -->
+
+## Kulcsszavak
+<!-- Amire optimalizálunk. Kutatásból, ne fejből. A posztszöveg és a felirat ezekre épül. -->
+
+## Referenciák
+<!-- Meglévő videó, versenytárs anyag, "ilyet szeretnék". Nézd meg, ne a leírásból dolgozz. -->
+
+## Zene és ritmus
+<!-- Van-e már kiválasztott zene? Ha igen, a jelenethosszak ehhez igazodnak. -->
+
+## Amit kerülni kell
+<!-- Tiltott elemek, jogi korlátok, márkaszabályok. -->
+"""
+    for f, txt in (("brief.md", BRIEF_VAZ), ("treatment.md", "# Kezelés\n\n")):
         p = os.path.join(root, f)
         if not os.path.exists(p):
             open(p, "w", encoding="utf-8").write(txt)

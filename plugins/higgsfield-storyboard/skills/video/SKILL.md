@@ -58,7 +58,7 @@ Bizonytalan felhasználónál **ezzel kezdj**, ne a generálással.
 
 | # | Réteg | Node | Költség | Mit hagy jóvá az ügyfél |
 |---|-------|------|---------|--------------------------|
-| 0 | Brief | `brief` | 0 | üzenet, célcsoport, hossz, felhasználási hely, referenciák |
+| 0 | Brief | `brief` | 0 | üzenet, célcsoport, hossz, felhasználási hely, kulcsszavak, referenciák |
 | 1 | Kezelés | `treatment` | 0 | dramaturgia, hangnem, ív |
 | 2 | Jelenetlista | `shotlist` | 0 | jelenetszám, gépállások, időzítés |
 | 3 | Látvány és karakter | `look` | alacsony | stíluskód, paletta, Soul-karakterek |
@@ -66,7 +66,7 @@ Bizonytalan felhasználónál **ezzel kezdj**, ne a generálással.
 | 5 | Mozgás | `motion:sNNN` | **magas** | jelenetenkénti mozgókép |
 | 6 | Összefűzés | `assembly` | 0 | nyersvágás, ritmus |
 | 7 | Hang | `sound` | közepes | zene, narráció, effektek |
-| 8 | Utómunka | `finish` | közepes | felirat, felskálázás, képarányváltozatok |
+| 8 | Utómunka | `finish` | közepes | felirat, felskálázás, képarányváltozatok, posztszöveg |
 
 Reklámjelenetnél a 4. réteg nem generálás, hanem összeállítás: megvan-e a termékkép, ki az avatár, melyik formátum. Ingyenes, de a jóváhagyása ugyanúgy kapu.
 
@@ -279,6 +279,14 @@ Ezek költsége **nem becsülhető előre**, ugyanúgy, mint a reklámágé. Sz�
 ### Ha egy generálás nem sikerült
 
 Ne futtasd újra automatikusan. Mutasd meg az eredményt, és a `${CLAUDE_PLUGIN_ROOT}/references/hibamintak.md` segítségével derítsd ki, melyik rétegen csúszott el — az alanynál, a cselekvésnél, a kameránál vagy a stílusnál. A javításnál **egyszerre egy dolgot változtass**, különben a következő eredményből nem derül ki, mi segített, és a kredit tanulság nélkül fogy.
+
+### Kísérőszöveg a kész anyaghoz
+
+A kép vagy a videó önmagában még nem poszt. A `finish` réteg része a **posztszöveg** is: kísérőszöveg, cím ahol van, hashtagek és az AI-jelölés. A szabályok a `${CLAUDE_PLUGIN_ROOT}/references/poszt-szoveg.md` fájlban vannak, olvasd el írás előtt.
+
+Két dolgot emelj ki magadnak. Az **első sor önmagában is működjön**, mert a felületek levágják a szöveget — ez felülír minden szövegírási keretrendszert. És a **kulcsszavakat ne találd ki**: a briefben kell szerepelniük, és ha nincsenek benne, kérdezd meg, mire optimalizáltok.
+
+A szöveg ugyanabból a briefből nő ki, mint maga a videó. Ne utólag aggasd rá, és ne ígérj benne olyat, amit az anyag nem mutat meg.
 
 ### Végső ellenőrzés leszállítás előtt
 
