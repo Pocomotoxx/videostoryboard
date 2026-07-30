@@ -19,6 +19,14 @@ Igen, a Code fülön kiválasztod, melyik mappában dolgozol. Készíts egy úja
 Nem. Ha valamihez mégis parancs kellene, írd meg Claude-nak sima mondatban, hogy csinálja
 meg — ő futtatja, te csak jóváhagyod.
 
+**Azt írja, hogy nincs ilyen skill. Most mi van?**
+Először ellenőrizd, hogy a telepítés tényleg befejeződött: írd be, hogy `/plugin`, és
+nézd meg, szerepel-e a listában a `higgsfield-storyboard` bekapcsolt állapotban. Ha igen,
+írd be, hogy `/reload-plugins`, vagy indítsd újra az alkalmazást. Utána írj be egy sima
+perjelet, és válaszd ki a listából a `video` bejegyzést — így nem lehet elgépelni.
+Ha továbbra sem megy, egyszerűen mondd el sima mondatban, mit szeretnél: a rendszer a
+feladat leírásából is elindul, perjeles parancs nélkül.
+
 **Mi a különbség a perjeles parancs és a sima mondat között?**
 A perjellel kezdődő sorok a rendszernek szólnak, például `/mcp`. Minden más sima
 beszélgetés Claude-dal: *„csináljunk egy húszmásodperces reklámot ehhez a termékhez"*.

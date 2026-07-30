@@ -1,6 +1,4 @@
 ---
-name: video
-user-invocable: true
 description: Rétegelt, jóváhagyáskapus AI-videó- és képgyártás Higgsfield MCP-vel, brieftől a kész anyagig. Használd ezt a skillt, amikor a felhasználó AI-videót, reklámfilmet, storyboardot, jelenetlistát, promptsorozatot, hirdetési kreatívot, ügyfélnek szánt mozgóképet, közösségimédia-posztot vagy képes karusszelt készít vagy tervez. Akkor is alkalmazd, ha csak annyit mond, hogy "csináljunk egy videót ebből", "kellene egy spot", "bontsuk jelenetekre", "generáljunk hozzá képeket", vagy ha Higgsfieldet, Klinget, Veo-t, Seedance-t, Sora-t említ. Mindig ezen a folyamaton keresztül dolgozz, soha ne generálj videót ad hoc módon.
 ---
 

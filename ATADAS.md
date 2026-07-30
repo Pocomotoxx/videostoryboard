@@ -97,14 +97,27 @@ Claude végigvezet rajta. Egyszer kell megcsinálni.
 
 ## 4. Az első indítás
 
-Írd be ezt:
+**A legegyszerűbb: írj be egy perjelet**, és a felugró listából válaszd ki a `video`
+nevű bejegyzést. Így nem kell semmit fejből begépelned, és nem lehet elgépelni sem.
+
+Ha inkább beírnád, a parancs ez:
 
 ```
 /higgsfield-storyboard:video
 ```
 
-Ezután már csak annyi a dolgod, hogy elmondod, mit szeretnél. Például:
+Ha erre azt írja, hogy nincs ilyen, próbáld a rövidebb alakot:
+
+```
+/video
+```
+
+**Ha egyik sem működik, akkor sincs baj.** Egyszerűen mondd el sima mondatban, mit
+szeretnél, és a rendszer magától elindul:
 *„Csináljunk egy 20 másodperces reklámot ehhez a termékhez."*
+
+A perjeles parancs csak kényelmi rövidítés — a rendszer felismeri a feladatot a
+leírásából is.
 
 Ugyanezt a parancsot használd később is, ha egy félbehagyott munkát folytatnál — a
 rendszer megnézi, hol tartottatok, és onnan viszi tovább. Nem kell emlékezned semmire.
