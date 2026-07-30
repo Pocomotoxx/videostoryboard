@@ -1,5 +1,28 @@
 # Gyakori kérdések
 
+## Hol és hogyan használom
+
+**Hova kell beírni a parancsokat?**
+A Claude **asztali alkalmazásba**, azon belül a **Code** fülre. Ott van egy beírómező,
+ugyanolyan, mint egy csevegőablakban — minden oda megy. Ha perjelet írsz be, feljön a
+választható parancsok listája.
+
+**A szokásos Claude-beszélgetésben nem működik?**
+Nem. Az a felület nem éri el a gépeden lévő fájlokat, és nem tud videót készíteni.
+A rendszernek az asztali alkalmazás **Code** füle kell. Ez a leggyakoribb félreértés.
+
+**Meg kell nyitnom valamilyen mappát?**
+Igen, a Code fülön kiválasztod, melyik mappában dolgozol. Készíts egy újat, például
+„videok" néven — ebben fognak létrejönni a munkáid, mindegyik külön almappában.
+
+**Kell terminált használnom?**
+Nem. Ha valamihez mégis parancs kellene, írd meg Claude-nak sima mondatban, hogy csinálja
+meg — ő futtatja, te csak jóváhagyod.
+
+**Mi a különbség a perjeles parancs és a sima mondat között?**
+A perjellel kezdődő sorok a rendszernek szólnak, például `/mcp`. Minden más sima
+beszélgetés Claude-dal: *„csináljunk egy húszmásodperces reklámot ehhez a termékhez"*.
+
 ## Pénz és kredit
 
 **Mennyibe kerül egy videó?**

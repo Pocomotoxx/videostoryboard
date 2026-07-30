@@ -1,7 +1,8 @@
 # Indulás — amit egyszer kell megcsinálni
 
 Ez a leírás annak szól, aki használni fogja a rendszert. Nem kell hozzá programozói
-tudás. Négy lépés, nagyjából negyed óra, és utána soha többé nem kell elővenni.
+tudás, és terminált sem kell használnod. Öt lépés, nagyjából negyed óra, és utána soha
+többé nem kell elővenni.
 
 Amit a rendszer tud: egy ötletből vagy briefből végigvisz a jelenetbontáson, a képes
 storyboardon és a videógeneráláson a kész vágásig. Minden szakasz végén megáll, és
@@ -10,46 +11,89 @@ Kreditet csak olyasmire költ, amit előtte jóváhagytál.
 
 ---
 
+## 0. Hova kell mindezt beírni
+
+**Ez a legfontosabb rész, olvasd el, mielőtt bármit csinálnál.**
+
+A rendszer **nem a szokásos Claude-beszélgetésben működik.** Az a felület, ahol kérdezni
+szoktál Claude-tól, nem tudja megnyitni a gépeden lévő fájlokat, és nem tud videót
+készíteni.
+
+Amire szükséged van, az a **Claude asztali alkalmazás**, azon belül pedig a **Code** fül.
+
+1. Töltsd le a Claude alkalmazást Macre a claude.ai oldalról, és telepítsd.
+2. Indítsd el, és lépj be a fiókodba.
+3. Fent három fül van: **Chat**, **Cowork** és **Code**. Kattints a **Code** fülre.
+4. Válaszd ki a mappát, amiben dolgozni fogsz. Készíts egy újat, például „videok" néven —
+   ebben fognak létrejönni a munkáid.
+
+Ezután látsz egy beírómezőt, ugyanolyat, mint egy csevegőablakban. **Minden, ami ebben az
+útmutatóban szerepel, ebbe a mezőbe megy.**
+
+Kétféle dolgot fogsz beírni:
+
+- **Perjellel kezdődő parancsok**, például `/mcp`. Ezek a rendszernek szólnak. Ha beírsz
+  egy perjelet, feljön a lehetséges parancsok listája, abból is választhatsz.
+- **Sima mondatok**, például *„csináljunk egy húszmásodperces reklámot"*. Ezek Claude-nak
+  szólnak, ahogy megszoktad.
+
+**Terminált nem kell használnod.** Ha valamihez mégis kellene, egyszerűen kérd meg
+Claude-ot, hogy csinálja meg — ő futtatja, te csak jóváhagyod.
+
+---
+
 ## 1. A rendszer telepítése
 
-Claude Code-ban írd be ezt a két sort, egyesével:
+Írd be a beírómezőbe ezt a sort, és nyomj entert:
 
 ```
 /plugin marketplace add Pocomotoxx/videostoryboard
 ```
 
+Utána ezt:
+
 ```
 /plugin install higgsfield-storyboard@videostoryboard
 ```
 
-Végül `/reload-plugins`, és kész. Ha frissítés jön, ugyanitt a
-`/plugin marketplace update` és a `/plugin update higgsfield-storyboard` hozza le.
+Végül ezt:
+
+```
+/reload-plugins
+```
+
+Ennyi. Ha később frissítés jön, ugyanide a `/plugin marketplace update`, majd a
+`/plugin update higgsfield-storyboard` hozza le.
 
 ## 2. A Higgsfield összekötése
 
-Ez az egyetlen lépés, ami kicsit technikásnak néz ki, de csak egy sor:
+Ehhez nem kell parancsot bemásolnod. Írd be a beírómezőbe, sima mondatként:
+
+> Kösd be a Higgsfield MCP-szervert, a hivatalos címen: https://mcp.higgsfield.ai/mcp
+
+Claude megcsinálja, és megkérdezi, jóváhagyod-e — mondd, hogy igen.
+
+Utána írd be ezt:
 
 ```
-claude mcp add --transport http --scope user higgsfield https://mcp.higgsfield.ai/mcp
+/mcp
 ```
 
-Utána írd be, hogy `/mcp`, válaszd a `higgsfield` sort, és a böngésződben lépj be a
-Higgsfield-fiókodba, ahogy szoktál.
+Válaszd a listából a `higgsfield` sort, és a böngésződben lépj be a Higgsfield-fiókodba,
+ahogy szoktál.
 
 **Jelszót senkinek nem kell megadnod.** A belépés a saját böngésződben történik, a
 jelszavad nem megy át a beszélgetésen, és a rendszer soha nem is fogja kérni. Ha valami
 mégis jelszót vagy API-kulcsot kérne, az hibás — ne add meg.
 
-## 3. Az ffmpeg telepítése
+## 3. A videóösszefűző telepítése
 
-Ez fűzi össze a kész jeleneteket egy videóvá, a saját gépeden, ingyen. Macen a
-Terminálban:
+Ez fűzi össze a kész jeleneteket egy videóvá, a saját gépeden, ingyen. Írd be sima
+mondatként:
 
-```
-brew install ffmpeg
-```
+> Telepítsd az ffmpeg programot a gépemre.
 
-Ha a `brew` parancsot nem ismeri a gép, kérdezd meg Claude-ot, ő végigvezet.
+Claude végigvezet rajta. Egyszer kell megcsinálni.
 
 ## 4. Az első indítás
 
