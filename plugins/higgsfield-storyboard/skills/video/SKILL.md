@@ -42,6 +42,18 @@ Ahol nincs előzetes árbecslés — Marketing Studio, hangcsere, szinkron —, 
 
 Az állapot `run status`-szal nézhető, a futás `run stop`-pal zárható. **Automata futást soha ne indíts magadtól**, csak ha a felhasználó kifejezetten kéri, és a plafont ő adja meg.
 
+### Napi előkészítés témasorból
+
+Ha a felhasználó rendszeres posztolást szeretne, nem naponta kell témát kitalálni: felír egy sort előre, és a rendszer minden nap elővesz egyet.
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" napi
+```
+
+Két mód van — **ingyenes** (brief, jelenetlista, gyártási csomag) és **kezdőkockákig** (szűk plafonnal). **Kérdezd meg, melyiket szeretné**, ne feltételezz. Ha nem tud dönteni, az ingyeneset javasold: onnan bármikor lehet lépni, a már elköltött kredit viszont nem jön vissza.
+
+A részletek a `${CLAUDE_PLUGIN_ROOT}/references/napi-elokeszites.md` fájlban. A lényeg: a rendszer **nem talál ki témát**, és felügyelet nélkül **soha nem indít mozgásréteget**. Hibánál megáll és leírja, mi történt — nem próbálkozik újra.
+
 ### Generálás nélküli végigfutás
 
 Ha a felhasználó azt szeretné látni, „mi lenne belőle", anélkül hogy egy kredit is elmenne: vidd végig a 0–2. réteget, majd

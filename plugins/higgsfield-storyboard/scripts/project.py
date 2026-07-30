@@ -319,6 +319,17 @@ def cmd_config_set(args):
         if r not in TOOL_ROLES:
             die(f"ismeretlen szerepkör: {r}. Lehetséges: {', '.join(TOOL_ROLES)}")
         c["tools"][r] = val
+    elif key.startswith("elokeszites."):
+        k = key.split(".", 1)[1]
+        c.setdefault("elokeszites", {})
+        if k == "mod":
+            if val not in ("ingyenes", "kezdokockak"):
+                die("az elokeszites.mod értéke 'ingyenes' vagy 'kezdokockak' lehet")
+            c["elokeszites"]["mod"] = val
+        elif k == "max_credits":
+            c["elokeszites"]["max_credits"] = int(val)
+        else:
+            die(f"ismeretlen előkészítési kulcs: {k}. Lehetséges: mod, max_credits")
     elif key.startswith("model."):
         r = key.split(".", 1)[1]
         if r not in MODEL_ROLES:
@@ -865,6 +876,134 @@ def cmd_package(args):
     print(f"  Elköltött kredit: 0\n")
 
 
+TEMASOR = "temasor.md"
+
+TEMASOR_VAZ = """# Témasor
+
+Egy sor egy téma. A rendszer mindig a legfelső kipipálatlant veszi elő.
+Feldolgozás után átvált `[x]`-re, és mögé kerül a projekt neve.
+
+Szerkezet — a téma után függőleges vonallal jöhetnek a beállítások:
+
+- [ ] A téma egy mondatban | ugyfel: ugyfelnev | tipus: kep
+
+A `ugyfel` és a `tipus` elhagyható. A `tipus` lehet `kep` vagy `video`.
+
+## Témák
+
+- [ ] <!-- ide írd az első témát -->
+"""
+
+
+def parse_temasor(p):
+    """A témasor kipipálatlan tételei, sorszámmal."""
+    if not os.path.exists(p):
+        return None
+    sorok = open(p, encoding="utf-8").read().splitlines()
+    # Csak a "## Témák" szakasz számít, hogy a fájl elején lévő magyarázó
+    # példasorokat ne vegyük valódi témának.
+    kezd = next((i + 1 for i, s in enumerate(sorok) if s.strip().lower() == "## témák"), 0)
+    tetelek = []
+    for i, sor in enumerate(sorok):
+        if i < kezd:
+            continue
+        t = sor.strip()
+        if not t.startswith("- [ ]"):
+            continue
+        tart = t[5:].strip()
+        if not tart or tart.startswith("<!--"):
+            continue
+        reszek = [r.strip() for r in tart.split("|")]
+        tetel = {"sor": i, "tema": reszek[0], "ugyfel": None, "tipus": None}
+        for r in reszek[1:]:
+            if ":" in r:
+                k, v = r.split(":", 1)
+                k = k.strip().lower()
+                if k in ("ugyfel", "tipus"):
+                    tetel[k] = v.strip()
+        tetelek.append(tetel)
+    return tetelek
+
+
+def cmd_napi(args):
+    """Az előkészítő futás első lépése: témát vesz, projektet nyit.
+
+    A tényleges munkát — brief, kezelés, jelenetlista — a modell végzi.
+    Ez a parancs csak kiválasztja a témát, létrehozza a projektet, és
+    beállítja a kereteket.
+    """
+    cfg = load_config()
+    mod = (cfg.get("elokeszites") or {}).get("mod")
+    if not mod:
+        die("nincs beállítva az előkészítés módja. Kérdezd meg a felhasználótól, "
+            "melyiket szeretné, és rögzítsd:\n"
+            "  config set elokeszites.mod ingyenes     — brief, jelenetlista, "
+            "gyártási csomag; nulla kredit\n"
+            "  config set elokeszites.mod kezdokockak  — a fentiek plusz a "
+            "kezdőkockák, szűk plafonnal\n"
+            "A 'kezdokockak' módhoz a plafont is meg kell adni:\n"
+            "  config set elokeszites.max_credits <szam>")
+
+    # A plafont még azelőtt ellenőrizzük, hogy bármit létrehoznánk vagy
+    # témát fogyasztanánk — különben egy hiányzó beállítás elhasználna egy témát.
+    plafon = (cfg.get("elokeszites") or {}).get("max_credits")
+    if mod == "kezdokockak" and not plafon:
+        die("a 'kezdokockak' módhoz plafon kell: "
+            "config set elokeszites.max_credits <szam>")
+
+    p = os.path.join(args.munkakonyvtar, TEMASOR)
+    tetelek = parse_temasor(p)
+    if tetelek is None:
+        os.makedirs(args.munkakonyvtar, exist_ok=True)
+        with open(p, "w", encoding="utf-8") as f:
+            f.write(TEMASOR_VAZ)
+        die(f"nem volt témasor, most létrejött: {p}. Töltsd fel témákkal.")
+    if not tetelek:
+        print(f"\n  A témasor üres vagy minden téma feldolgozva: {p}")
+        print("  Nincs mit előkészíteni. Szólj a felhasználónak, hogy vegyen fel témát.\n")
+        return
+
+    t = tetelek[0]
+    slug = "".join(c if c.isalnum() else "-" for c in t["tema"].lower())[:40].strip("-")
+    nev = f"{time.strftime('%Y-%m-%d')}-{slug or 'tema'}"
+    root = os.path.join(args.munkakonyvtar, nev)
+    if os.path.exists(root):
+        die(f"már létezik: {root}")
+
+    args_init = argparse.Namespace(name=root, ugyfel=t["ugyfel"], project=args.munkakonyvtar)
+    cmd_init(args_init)
+
+    # a téma bekerül a briefbe kiindulásnak
+    bp = os.path.join(root, "brief.md")
+    tart = open(bp, encoding="utf-8").read()
+    tart = tart.replace("## Mit akarunk elérni\n",
+                        f"## Mit akarunk elérni\n\n{t['tema']}\n")
+    open(bp, "w", encoding="utf-8").write(tart)
+
+    # a témasor tételének kipipálása
+    sorok = open(p, encoding="utf-8").read().splitlines()
+    sorok[t["sor"]] = sorok[t["sor"]].replace("- [ ]", "- [x]", 1) + f" → {nev}"
+    open(p, "w", encoding="utf-8").write("\n".join(sorok) + "\n")
+
+    print(f"\n  Téma: {t['tema']}")
+    if t["ugyfel"]:
+        print(f"  Ügyfél: {t['ugyfel']}")
+    if t["tipus"]:
+        print(f"  Kért típus: {t['tipus']}")
+    print(f"  Projekt: {root}")
+    print(f"  Mód: {mod}")
+
+    if mod == "kezdokockak":
+        cmd_run_start(argparse.Namespace(project=root, max_credits=plafon,
+                                         allow_motion=False))
+        print("\n  Feladat: brief, kezelés, jelenetlista, majd a kezdőkockák a "
+              "plafonig. A mozgásréteghez ne nyúlj.")
+    else:
+        print("\n  Feladat: brief, kezelés, jelenetlista, majd `package`. "
+              "Generálni tilos, ez ingyenes előkészítés.")
+    print("  Hiba esetén állj meg, ne próbálkozz újra, és írd le, mi történt.\n")
+
+
 POSZT_VAZ = """# Posztszöveg — {nev}
 
 <!-- KITÖLTENDŐ: a kísérőszöveget a modell írja meg a references/poszt-szoveg.md
@@ -1108,6 +1247,10 @@ def main():
 
     sub.add_parser("package", help="gyártási csomag generálás nélkül").set_defaults(f=cmd_package)
     sub.add_parser("delivery", help="leszállítási csomag összeállítása").set_defaults(f=cmd_delivery)
+
+    s = sub.add_parser("napi", help="előkészítő futás: témát vesz a sorból, projektet nyit")
+    s.add_argument("--munkakonyvtar", default=".", help="ahol a témasor és a projektek vannak")
+    s.set_defaults(f=cmd_napi)
 
     for name, fn in (("approve", cmd_approve), ("pending", cmd_pending)):
         s = sub.add_parser(name); s.add_argument("node"); s.set_defaults(f=fn)
