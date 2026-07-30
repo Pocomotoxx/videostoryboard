@@ -1,5 +1,6 @@
 ---
-name: higgsfield-storyboard
+name: video
+user-invocable: true
 description: Rétegelt, jóváhagyáskapus AI-videógyártás Higgsfield MCP-vel, brieftől a kész vágásig. Használd ezt a skillt, amikor a felhasználó AI-videót, reklámfilmet, storyboardot, jelenetlistát, promptsorozatot, hirdetési kreatívot vagy ügyfélnek szánt mozgóképet készít vagy tervez. Akkor is alkalmazd, ha csak annyit mond, hogy "csináljunk egy videót ebből", "kellene egy spot", "bontsuk jelenetekre", "generáljunk hozzá képeket", vagy ha Higgsfieldet, Klinget, Veo-t, Seedance-t, Sora-t említ. Mindig ezen a folyamaton keresztül dolgozz, soha ne generálj videót ad hoc módon.
 ---
 
@@ -85,82 +86,45 @@ Webes videóhoz külön eszköz kell, ami letölti és a feliratot is kinyeri. E
 
 Amit a referenciából kinyersz, az a brief része: milyen a nyitóhorog, milyen hosszúak a vágások, milyen a hangnem. A képi világ szó szerinti másolása viszont jogi kockázat, ügyfélmunkában kerüld — erről a `continuity.md` szól.
 
-### Első indulás: a Higgsfield MCP bekötése
+### Így indulj, minden alkalommal
 
-A generáló rétegek a Higgsfield hivatalos felhős MCP-szerverén keresztül működnek. Ha a felhasználónál ez még nincs bekötve, ez az első lépés, minden más előtt.
+**Az igazság a fájlokban van, nem a beszélgetésben.** Soha ne a korábbi üzenetekből próbáld kitalálni, hol tartotok — kérdezd meg az állapotot.
 
-```bash
-claude mcp add --transport http --scope user higgsfield https://mcp.higgsfield.ai/mcp
-```
-
-Ezután a felhasználó a `/mcp` paranccsal, a saját böngészőjében lép be a Higgsfield-fiókjába, és engedélyezi a hozzáférést. A `--scope user` azért kell, hogy a szerver minden projektjében elérhető legyen.
-
-**Jelszót, API-kulcsot vagy más belépési adatot soha ne kérj tőle, és ne is vegyél át.** A belépés OAuth-tal, a böngészőben történik, a jelszó nem megy át a beszélgetésen. Ha a felhasználó mégis beírná, figyelmeztesd, hogy erre nincs szükség, és irányítsd a `/mcp` parancshoz. Ugyanez vonatkozik a `cloud.higgsfield.ai` API-kulcsaira: a hivatalos MCP-szerverhez nem kellenek.
-
-**A parancssori eszköz hasznos, de nem kötelező.** A folyamat az MCP-vel önmagában is végigvihető. Ellenőrizd, van-e (`higgsfield version`), és rögzítsd az eredményt:
-
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set cli van
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set cli nincs
-```
-
-Ha nincs, **ne erőltesd a telepítést**, és semmiképp ne tedd feltételévé a munkakezdésnek. Ajánld fel egyszer, egy mondatban, hogy `npm install -g @higgsfield/cli` paranccsal telepíthető (Node.js kell hozzá), és ha a felhasználó nem kéri, dolgozz nélküle. A parancsokat amúgy is te futtatod, nem ő — neki soha nem kell parancssort használnia.
-
-Amit CLI nélkül másképp kell csinálni, azt a `references/cli.md` végén lévő táblázat sorolja fel. A lényeg: a kilenc réteg és a reklámág teljesen működik MCP-vel, a CLI csak kényelmesebbé teszi.
-
-Belépés után kérd meg, hogy a Higgsfield-fiókjában nézze meg, melyik egyenlegből vont le az első generálás — az előfizetése havi kreditjéből vagy külön fejlesztői API-keretből. A költségbecslés csak akkor lesz valós, ha a megfelelő keretet mérjük.
-
-### Első indulás: telepítési adatok
-
-Minden munkamenet elején futtasd le:
+Első lépésként, kivétel nélkül:
 
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config show
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" status
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" next
 ```
 
-Ha bármi `HIÁNYZIK`, akkor **először a telepítést vidd végig, és csak utána kezdj munkához**.
+Ha a `config show` bármit hiányol, előbb a telepítés jön (`${CLAUDE_PLUGIN_ROOT}/references/telepites.md`). Ha minden megvan, akkor is **ellenőrizd az egyenleget** a `balance` eszközzel: ha a csomag vagy a havi keret eltér a mentettől, a felhasználó csomagot váltott, és frissíteni kell. Csomagot soha ne feltételezz. Ha nincs projekt az aktuális könyvtárban, akkor új munka indul. Minden más esetben folytatás — a `next` megmondja, mi a következő lépés.
 
-A telepítés nagy részét **magadnak kell felderítened, nem a felhasználót kérdezgetni**. Az adatok többsége lekérdezhető a Higgsfield MCP-jén keresztül, és a mért érték mindig jobb, mint amit fejből mondana. Kérdezni csak azt kérdezd, ami nem derül ki. A részletek a `references/mcp-eszkozok.md` fájlban vannak, olvasd el a telepítés előtt.
+Ezután **egy mondatban** foglald össze a felhasználónak, hol tartotok, és tedd fel a következő kérdést. Ne listázd ki az összes lehetőséget.
 
-A telepítés négy lépés, ebben a sorrendben.
+### Egyszerre egy kérdés, javaslattal
 
-**1. Eszközfelderítés.** Nézd meg a ténylegesen elérhető MCP-eszközöket, és feleltesd meg őket az öt szerepkörnek. A `references/mcp-eszkozok.md` megmondja, melyik szerepkörhöz melyik eszközt szokta hívni a platform — de ez csak kiindulópont, a tényleges eszközlista az igazság. Eszköznevet kitalálni tilos. Ha valamelyik szerepkörhöz nincs eszköz, mondd meg a felhasználónak, és tervezz kerülőutat.
+Ez a rendszer legfontosabb kommunikációs szabálya. A felhasználó marketinges, nem rendszergazda: ne kérdéssorokat kapjon, hanem egy kérdést, amire elég annyit mondania, hogy jó.
 
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set tool.image_gen "<eszköznév>"
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set tool.image_to_video "<eszköznév>"
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set tool.character_train "<eszköznév>"
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set tool.upscale "<eszköznév>"
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set tool.history "<eszköznév>"
-```
+Rosszul: „Milyen hosszú legyen, milyen képarányban, hány jelenettel, milyen hangnemben, és melyik modellel dolgozzunk?"
 
-**2. Csomag és keret.** A `balance` eszköz kiírja az egyenleget és az előfizetési csomagot. **Ne kérdezd meg a felhasználótól, amit ez megmond.** Csak akkor kérdezz rá, ha az eszköz nem elérhető, vagy a válasza értelmezhetetlen.
+Jól: „Harminc másodpercet javaslok, függőlegesben, mert Instagramra megy. Jó lesz?"
 
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set plan "<csomagnev>"
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set monthly_credits <szam>
-```
+Mindig **legyen javaslatod**, és mondd meg, miért azt javaslod. Ha a felhasználó nem válaszol érdemben, hanem rábólint, akkor haladj tovább — a javaslat a te felelősséged.
 
-**3. Kreditárak mérése.** Ne tippelj és ne kérdezz: mérd meg. A `generate_image` és a `generate_video` hívásoknak átadható a `get_cost: true` paraméter, amitől nem indul munka, csak visszajön a becsült ár. Ezzel négy tételt kell megállapítani.
+Ha menet közben olyasmi derül ki, ami a korábbi döntést érinti, **kérdezz vissza**, ne írd felül csendben.
 
-Előbb ellenőrizd a modell paramétersémáját (`models_explore`), mert a képarány és a hossz felsorolt érték, nem szabad szöveg — érvénytelen paraméterrel a mérés is hibás lesz. Utána mérj: egy kezdőkocka ára a képmodellel, egy másodpercnyi mozgókép ára a videómodellel (a teljes klip árát oszd el a hosszal), egy szereplő betanítása, egy felskálázás. Ha egy tétel nem mérhető, azt az egyet kérdezd meg.
+### Az ingyenes rétegeken haladj folyamatosan
 
-**A modellt is rögzítsd**, amivel mértél, mert az ár modellenként eltér, és fél év múlva már senki nem fogja tudni, melyik számhoz melyik modell tartozott. Modellazonosítót ne találj ki: a `model list` adja az aktuális katalógust, a gyakoriakat a `references/cli.md` sorolja fel.
+A brief, a kezelés és a jelenetlista nem kerül kreditbe. Ott ne kérj teljes értékű jóváhagyást minden lépésnél, mert az lassú és feleslegesen hivatalos.
 
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set model.image <modellazonosito>
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set model.video <modellazonosito>
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set cost.image <szam>
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set cost.video_per_second <szam>
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set cost.character_train <szam>
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set cost.upscale <szam>
-```
+Ehelyett: minden réteg végén **mutasd meg az eredményt, és kérdezz vissza egy könnyű kérdéssel** — „ez a felépítés jó, vagy vigyünk máshova?". Ha rábólint, `approve`, és mész tovább. Nem vársz külön engedélyt a következő réteg megkezdéséhez.
 
-**4. Az eredmény ellenőriztetése.** A `config show` kimenetét mutasd meg neki, és kérdezd meg, stimmel-e. Ez az egyetlen pont, ahol a telepítés emberi jóváhagyást kér — a többit magad deríted ki.
+A jelenetlistánál azért állj meg alaposabban, mert onnantól a döntések pénzbe kerülnek: a jelenetszám és a hosszak határozzák meg a költséget.
 
-**Egy kivétel a méréssel.** A Marketing Studio modelljeire nem működik a `get_cost`. Az avatáros reklámok árát csak utólag, a `transactions` eszközzel lehet leolvasni. Ezt előre mondd meg neki, mert ez az egyetlen ág, ahol nem tudsz előre árat mondani.
+### A kredites rétegeknél kemény megállás
 
-A beállítások a felhasználó gépén, a `~/.higgsfield-storyboard/config.json` fájlban maradnak, tehát ezt egyszer kell végigcsinálni, nem projektenként. Az `init` innen örökli az árakat és az eszközneveket. Ha később árat vagy csomagot vált, ugyanezekkel a parancsokkal frissíthető, de a **már létező projektek a saját mentett áraikkal dolgoznak tovább**, hogy a korábbi becslések visszakereshetők maradjanak.
+A látvány, a kezdőkockák és a mozgás előtt **teljes megállás**: mutasd a becslést, mondd meg, mi következik, és várj kifejezett igenre. Itt a rábólintás nem elég, kérdezz rá a költségre is.
 
 ### Indulás
 
@@ -189,7 +153,7 @@ Az állóképeket `Read` hívással közvetlenül meg tudod nézni. A **mozgók�
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/frames.py" shots/s003.mp4 --db 6
 ```
 
-A kimentett kockákat nézd végig `Read` hívással, és vesd össze a `references/hibamintak.md` listájával: stimmel-e a szereplő, a kéz, a ruha, nincs-e olvashatatlan szöveg a háttérben, azt csinálja-e, amit a prompt kért.
+A kimentett kockákat nézd végig `Read` hívással, és vesd össze a `${CLAUDE_PLUGIN_ROOT}/references/hibamintak.md` listájával: stimmel-e a szereplő, a kéz, a ruha, nincs-e olvashatatlan szöveg a háttérben, azt csinálja-e, amit a prompt kért.
 
 **Ha nyilvánvaló hibát látsz, ne tedd a felhasználó elé jóváhagyásra.** Mondd meg, mit látsz, és javasolj javítást. A jóváhagyás az ő döntése, de az ő idejét ne olyasmire fordítsd, amit magad is kiszűrsz.
 
@@ -218,9 +182,9 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" reject keyframe:s003 --note "
 
 ### Jelenetlista
 
-A `shotlist` réteg a `templates/storyboard.example.json` szerinti szerkezetet tölti fel. Három referenciát olvass el hozzá: a `references/shot-grammar.md` a gépállásokról és kameramozgásokról szól, a `references/prompt-iras.md` arról, hogyan áll össze belőlük a tényleges angol prompt, a `references/nyitohook.md` pedig a nyitójelenetről — ez utóbbi akkor számít, ha a videó közösségi médiába vagy hirdetésnek készül.
+A `shotlist` réteg a `${CLAUDE_PLUGIN_ROOT}/templates/storyboard.example.json` szerinti szerkezetet tölti fel. Három referenciát olvass el hozzá: a `${CLAUDE_PLUGIN_ROOT}/references/shot-grammar.md` a gépállásokról és kameramozgásokról szól, a `${CLAUDE_PLUGIN_ROOT}/references/prompt-iras.md` arról, hogyan áll össze belőlük a tényleges angol prompt, a `${CLAUDE_PLUGIN_ROOT}/references/nyitohook.md` pedig a nyitójelenetről — ez utóbbi akkor számít, ha a videó közösségi médiába vagy hirdetésnek készül.
 
-**Ha erős ritmusú zene lesz alatta, a zenét itt már ismerni kell.** A jelenethosszak generálási paraméterek, utólag nem nyújthatók — vagyis ha a vágásoknak ütemre kell esniük, azt a jelenetlistában kell eldönteni, nem az összefűzésnél. A `references/zene-es-ritmus.md` mondja meg, hogyan, a `scripts/beatgrid.py` pedig kiszámolja az ütemre eső hosszakat. Ha még nincs zene, a tartalom ritmusa szerint ossz, és ne próbálj kockapontos illesztést.
+**Ha erős ritmusú zene lesz alatta, a zenét itt már ismerni kell.** A jelenethosszak generálási paraméterek, utólag nem nyújthatók — vagyis ha a vágásoknak ütemre kell esniük, azt a jelenetlistában kell eldönteni, nem az összefűzésnél. A `${CLAUDE_PLUGIN_ROOT}/references/zene-es-ritmus.md` mondja meg, hogyan, a `${CLAUDE_PLUGIN_ROOT}/scripts/beatgrid.py` pedig kiszámolja az ütemre eső hosszakat. Ha még nincs zene, a tartalom ritmusa szerint ossz, és ne próbálj kockapontos illesztést.
 
 Két fontos megkötés. A klipek legfeljebb tizenöt másodpercesek, tehát ennél hosszabb jelenet nem létezik, bontsd szét. A `prompt_en` mező **mindig angol**, a `leiras` mező magyar, mert azt az ügyfél olvassa.
 
@@ -240,7 +204,7 @@ A **filmes** jelenet az alapértelmezés: generált kezdőkockából készül mo
 
 A **reklám** jelenet a Marketing Studio ága: feltöltött termékkép, egy avatár és egy előre adott hirdetésformátum. Ez való rövid közösségimédia-hirdetéshez, termékbemutatóhoz, kicsomagoláshoz, virtuális próbához — és ez az, amivel egy avatár beszélni tud egy feltöltött termékről.
 
-**Ha a feladat reklám, a `references/reklam-marketing-studio.md` fájlt kötelező elolvasni**, mielőtt jelenetlistát írsz. Más korlátok érvényesek rá: legfeljebb 15 másodperc, pontosan egy avatár, kötelező termékkép, egy helyszín, zárt listás hook. És ami a költségkapunk szempontjából a legfontosabb: **erre az ágra a platform nem ad előzetes árbecslést**, a költség csak utólag olvasható ki. Ezt mondd meg a felhasználónak, mielőtt elindítja az elsőt.
+**Ha a feladat reklám, a `${CLAUDE_PLUGIN_ROOT}/references/reklam-marketing-studio.md` fájlt kötelező elolvasni**, mielőtt jelenetlistát írsz. Más korlátok érvényesek rá: legfeljebb 15 másodperc, pontosan egy avatár, kötelező termékkép, egy helyszín, zárt listás hook. És ami a költségkapunk szempontjából a legfontosabb: **erre az ágra a platform nem ad előzetes árbecslést**, a költség csak utólag olvasható ki. Ezt mondd meg a felhasználónak, mielőtt elindítja az elsőt.
 
 A két típust ne keverd egy jeleneten belül. Egy projektben viszont megférnek egymás mellett.
 
@@ -252,7 +216,7 @@ A **logót soha ne generáltasd**, hanem utómunkában helyezd rá. Ez a `contin
 
 ### Folytonosság
 
-Karakter- és stílusfolytonosságról a `references/continuity.md` szól. Ezt a `look` réteg előtt kötelező elolvasni. Konzisztens szereplő nélkül a többjelenetes videó használhatatlan, és ezen a ponton szokott elhasalni a munka.
+Karakter- és stílusfolytonosságról a `${CLAUDE_PLUGIN_ROOT}/references/continuity.md` szól. Ezt a `look` réteg előtt kötelező elolvasni. Konzisztens szereplő nélkül a többjelenetes videó használhatatlan, és ezen a ponton szokott elhasalni a munka.
 
 ### Költség
 
@@ -280,21 +244,21 @@ Az összefűzés helyben fut ffmpeggel, nem az MCP-n keresztül. A `check-assemb
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/assemble.py" --project . --aspect 9:16 --subtitles felirat.srt --music zene.m4a
 ```
 
-**Képarányváltásnál figyelj.** Az `assemble.py` egyszerűen levágja a kép szélét, ami 16:9-ből 9:16-ba váltva fontos tartalmat vághat le — feliratot, a szereplő fejét, a terméket. Ha ez fenyeget, a platform tartalomtudatos képarányváltó munkafolyamata a jobb megoldás, lásd `references/cli.md`. Az kreditbe kerül, a helyi vágás nem, ezért előbb nézd meg a helyi eredményt, és csak akkor válts, ha tényleg romlott.
+**Képarányváltásnál figyelj.** Az `assemble.py` egyszerűen levágja a kép szélét, ami 16:9-ből 9:16-ba váltva fontos tartalmat vághat le — feliratot, a szereplő fejét, a terméket. Ha ez fenyeget, a platform tartalomtudatos képarányváltó munkafolyamata a jobb megoldás, lásd `${CLAUDE_PLUGIN_ROOT}/references/cli.md`. Az kreditbe kerül, a helyi vágás nem, ezért előbb nézd meg a helyi eredményt, és csak akkor válts, ha tényleg romlott.
 
 ### Hang
 
-A narrációhoz beszédszintézis használható, kiválasztott hanggal — a hangok listája lekérdezhető, kitalálni nem lehet. Kész videó idegen nyelvű változatához külön szinkronizáló munkafolyamat van, a hang cseréjéhez pedig hangcserélő. Mindkettő a `references/cli.md`-ben szerepel.
+A narrációhoz beszédszintézis használható, kiválasztott hanggal — a hangok listája lekérdezhető, kitalálni nem lehet. Kész videó idegen nyelvű változatához külön szinkronizáló munkafolyamat van, a hang cseréjéhez pedig hangcserélő. Mindkettő a `${CLAUDE_PLUGIN_ROOT}/references/cli.md`-ben szerepel.
 
 Ezek költsége **nem becsülhető előre**, ugyanúgy, mint a reklámágé. Szólj róla, mielőtt elindítod.
 
 ### Ha egy generálás nem sikerült
 
-Ne futtasd újra automatikusan. Mutasd meg az eredményt, és a `references/hibamintak.md` segítségével derítsd ki, melyik rétegen csúszott el — az alanynál, a cselekvésnél, a kameránál vagy a stílusnál. A javításnál **egyszerre egy dolgot változtass**, különben a következő eredményből nem derül ki, mi segített, és a kredit tanulság nélkül fogy.
+Ne futtasd újra automatikusan. Mutasd meg az eredményt, és a `${CLAUDE_PLUGIN_ROOT}/references/hibamintak.md` segítségével derítsd ki, melyik rétegen csúszott el — az alanynál, a cselekvésnél, a kameránál vagy a stílusnál. A javításnál **egyszerre egy dolgot változtass**, különben a következő eredményből nem derül ki, mi segített, és a kredit tanulság nélkül fogy.
 
 ### Végső ellenőrzés leszállítás előtt
 
-A `finish` réteg után, még az átadás előtt menj végig a `references/vegso-ellenorzes.md` hét pontján. Ez nem ugyanaz, mint a rétegek jóváhagyása: ott jelenetenként néztétek, itt a **kész egészet** kell megnézni, és összevetni az eredeti briefel.
+A `finish` réteg után, még az átadás előtt menj végig a `${CLAUDE_PLUGIN_ROOT}/references/vegso-ellenorzes.md` hét pontján. Ez nem ugyanaz, mint a rétegek jóváhagyása: ott jelenetenként néztétek, itt a **kész egészet** kell megnézni, és összevetni az eredeti briefel.
 
 Ne javíts magadtól ebben a szakaszban. Sorold fel, amit találtál, három súlyossági csoportban, és a felhasználó döntsön. A leszállítás előtti kapkodó javítás új hibát visz be.
 

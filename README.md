@@ -15,7 +15,8 @@ Claude Code-ban, egyszer:
 /plugin install higgsfield-storyboard@videostoryboard
 ```
 
-Utána `/reload-plugins`, és a skill elérhető `higgsfield-storyboard` néven. Frissítés
+Utána `/reload-plugins`. A folyamat a `/higgsfield-storyboard:video` paranccsal indul —
+egy meglévő projekt könyvtárában ugyanez folytatja a félbehagyott munkát. Frissítés
 később `/plugin marketplace update`, majd `/plugin update higgsfield-storyboard`.
 
 ## Átadás a felhasználónak
@@ -44,7 +45,7 @@ használni fogja a rendszert.
 .claude-plugin/marketplace.json          # a katalógus
 plugins/higgsfield-storyboard/           # maga a plugin
 ├── .claude-plugin/plugin.json
-├── SKILL.md                             # a folyamat leírása
+├── skills/video/SKILL.md                # a belépőpont
 ├── scripts/project.py                   # rétegek állapotgépe, jóváhagyás- és költségkapu
 ├── scripts/assemble.py                  # helyi összefűzés ffmpeggel
 ├── references/                          # jelenetnyelvtan, folytonosság

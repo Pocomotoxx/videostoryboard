@@ -1,7 +1,7 @@
 {
   "name": "higgsfield-storyboard",
   "description": "Rétegelt, jóváhagyáskapus AI-videógyártás Higgsfield MCP-vel, brieftől a kész vágásig.",
-  "version": "2.6.0",
+  "version": "3.0.0",
   "author": {
     "name": "Pocomotoxx"
   },

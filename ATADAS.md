@@ -53,12 +53,25 @@ Ha a `brew` parancsot nem ismeri a gép, kérdezd meg Claude-ot, ő végigvezet.
 
 ## 4. Az első indítás
 
-Ezután már csak annyi a dolgod, hogy elmondod Claude-nak, mit szeretnél. Például:
+Írd be ezt:
+
+```
+/higgsfield-storyboard:video
+```
+
+Ezután már csak annyi a dolgod, hogy elmondod, mit szeretnél. Például:
 *„Csináljunk egy 20 másodperces reklámot ehhez a termékhez."*
 
-Az első alkalommal a rendszer kideríti magától, milyen csomagod van, mennyi kredited van,
-és mennyibe kerülnek az egyes lépések. Ehhez nem kell semmit csinálnod, legfeljebb a
-végén megerősítened, hogy amit talált, az stimmel.
+Ugyanezt a parancsot használd később is, ha egy félbehagyott munkát folytatnál — a
+rendszer megnézi, hol tartottatok, és onnan viszi tovább. Nem kell emlékezned semmire.
+
+Az első alkalommal kideríti magától, milyen csomagod van, mennyi kredited van, és
+mennyibe kerülnek az egyes lépések. Ehhez nem kell semmit csinálnod, legfeljebb a végén
+megerősítened, hogy amit talált, az stimmel.
+
+**Az első videót érdemes generálás nélkül végigvinni.** Mondd azt, hogy *„előbb nézzük
+meg kredit nélkül, mi lenne belőle"* — ilyenkor elkészül a teljes terv, jelenetekre
+bontva, az árral együtt, de egy kredit sem megy el. Ha tetszik, onnan indul a gyártás.
 
 ---
 

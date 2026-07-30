@@ -8,12 +8,13 @@ Telepítés és előfeltételek: a repó gyökerében lévő `README.md`.
 ## Szerkezet
 
 ```
-SKILL.md                            # a folyamat leírása, a skill belépőpontja
+skills/video/SKILL.md               # a belépőpont: /higgsfield-storyboard:video
 .claude-plugin/plugin.json          # plugin-manifest
 scripts/project.py                  # rétegek állapotgépe, jóváhagyás-, költség- és plafonkapu
 scripts/assemble.py                 # helyi összefűzés ffmpeggel, felirat, hangerő
 scripts/frames.py                   # képkockák kimentése a kész klipek ellenőrzéséhez
 scripts/beatgrid.py                 # ütemre illesztett jelenethosszak
+references/telepites.md             # MCP-bekötés, gépszintű adatok, csomagváltás
 references/shot-grammar.md          # gépállás, szög, kameramozgás, promptszerkezet
 references/continuity.md            # karakter- és stílusfolytonosság
 references/mcp-eszkozok.md          # a Higgsfield MCP eszközkészlete, költségmérés

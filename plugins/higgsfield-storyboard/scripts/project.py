@@ -474,6 +474,13 @@ def cmd_run_start(args):
     mozgas = "engedélyezve" if args.allow_motion else "letiltva"
     print(f"Automata futás elindítva. Plafon: {args.max_credits} kredit. "
           f"Mozgásréteg: {mozgas}.")
+    havi = state.get("monthly_credits")
+    if havi:
+        arany = round(args.max_credits / havi * 100)
+        print(f"Ez a havi keret ({havi} kredit) {arany}%-a.")
+        if arany > 25:
+            print("FIGYELEM: a plafon a havi keret jelentős része. "
+                  "Felügyelet nélküli futáshoz ez soknak tűnik.")
     print("A futás magától megáll, ha a plafon elfogy. Leállítás: run stop")
 
 
