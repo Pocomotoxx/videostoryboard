@@ -23,7 +23,7 @@ később `/plugin marketplace update`, majd `/plugin update higgsfield-storyboar
 
 Három szakzsargon nélküli dokumentum annak, aki használni fogja a rendszert:
 
-- **[ATADAS.md](ATADAS.md)** — telepítés négy lépésben, és hogyan dolgozz vele.
+- **[ATADAS.md](ATADAS.md)** — telepítés lépésről lépésre, és hogyan dolgozz vele.
 - **[MIT-TUD.md](MIT-TUD.md)** — mit készít, mit tud a szakmáról, és mit nem csinál szándékosan.
 - **[GYIK.md](GYIK.md)** — gyakori kérdések: pénz, minőség, automatizálás, ügyfélmunka.
 - **[UTEMEZES.md](UTEMEZES.md)** — a napi automatikus előkészítés beállítása, lépésről lépésre.
