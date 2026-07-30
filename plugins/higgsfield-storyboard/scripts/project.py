@@ -13,6 +13,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 import sys
 import time
 
@@ -756,7 +757,8 @@ def cmd_package(args):
     c = state["costs"]
     filmes = [s for s in shots if s.get("tipus", "filmes") == "filmes"]
     reklam = [s for s in shots if s.get("tipus") == "reklam"]
-    ossz = sum(s.get("duration_s", 5) for s in shots)
+    kepek = [s for s in shots if s.get("tipus") == "kep"]
+    ossz = sum(s.get("duration_s", 5) for s in filmes + reklam)
 
     sorok = []
     add = sorok.append
@@ -765,8 +767,10 @@ def cmd_package(args):
         f"Ez a csomag generálás nélkül készült, kreditbe nem került.\n")
 
     add("## Áttekintés\n")
-    add(f"- Jelenet: {len(shots)} db ({len(filmes)} filmes, {len(reklam)} reklám)")
-    add(f"- Teljes hossz: {ossz} másodperc")
+    add(f"- Tétel: {len(shots)} db ({len(filmes)} filmes, {len(reklam)} reklám, "
+        f"{len(kepek)} kép)")
+    if ossz:
+        add(f"- Mozgókép összhossz: {ossz} másodperc")
     if state.get("models", {}).get("image"):
         add(f"- Tervezett modellek: kép `{state['models']['image']}`, "
             f"videó `{state['models'].get('video') or '?'}`")
@@ -816,12 +820,12 @@ def cmd_package(args):
         add(f"\n```\n{s.get('prompt_en', '(hiányzik)')}\n```\n")
 
     add("## Költségbecslés\n")
-    img = len(filmes) * c["image"]
+    img = (len(filmes) + len(kepek)) * c["image"]
     vid = sum(s.get("duration_s", 5) for s in filmes) * c["video_per_second"]
     train = len(look.get("characters", [])) * c["character_train"]
     alap = img + vid + train
     add(f"- Karaktertanítás: {train} kredit")
-    add(f"- Kezdőkockák: {img} kredit")
+    add(f"- Kezdőkockák és képek: {img} kredit")
     add(f"- Mozgókép: {vid} kredit")
     add(f"- **Alapösszeg: {alap} kredit**, 40% újrafuttatási tartalékkal "
         f"{int(alap * 1.4)} kredit")
@@ -857,8 +861,110 @@ def cmd_package(args):
     with open(ki, "w", encoding="utf-8") as f:
         f.write("\n".join(sorok))
     print(f"\n  Gyártási csomag: {ki}")
-    print(f"  {len(shots)} jelenet, {ossz} mp, becsült {int(alap * 1.4)} kredit")
+    print(f"  {len(shots)} tétel, becsült {int(alap * 1.4)} kredit")
     print(f"  Elköltött kredit: 0\n")
+
+
+POSZT_VAZ = """# Posztszöveg — {nev}
+
+<!-- KITÖLTENDŐ: a kísérőszöveget a modell írja meg a references/poszt-szoveg.md
+     szabályai szerint. A jelölő sorokat töröld, ahogy kitöltöd. -->
+
+## Kísérőszöveg
+
+<!-- KITÖLTENDŐ. Az első sor önmagában is teljes üzenet legyen, a fontos
+     kulcsszóval. A felületek a többit levágják. -->
+
+## Cím
+
+<!-- KITÖLTENDŐ, ahol értelmezhető (YouTube). Máshol törölhető ez a szakasz. -->
+
+## Hashtagek
+
+<!-- KITÖLTENDŐ. Néhány pontos címke: egy-két tág, néhány szűk, plusz a márkáé. -->
+
+## AI-jelölés
+
+Ez a tartalom mesterséges intelligenciával készült.
+
+## Kulcsszavak, amikre optimalizáltunk
+
+<!-- KITÖLTENDŐ a brief alapján. Ha a briefben nincs, kérdezd meg. -->
+"""
+
+
+def cmd_delivery(args):
+    """A leszállítandó csomag összeállítása és hiányellenőrzése.
+
+    A fájlokat összegyűjti egy helyre, a posztszöveghez vázat készít, és
+    megmondja, mi hiányzik még. A szöveget nem ő írja meg — azt a modell
+    írja, a references/poszt-szoveg.md szerint.
+    """
+    state = sync(args.project, load(args.project))
+    board = load_board(args.project)
+    shots = board.get("shots", [])
+    finish = board.get("finish", {})
+    kimenetek = finish.get("kimenetek") or []
+    nev = board.get("nev") or state.get("name", "anyag")
+
+    cel = os.path.join(args.project, "delivery")
+    os.makedirs(cel, exist_ok=True)
+    hianyzik, atmasolt = [], []
+
+    # 1. mozgóképes kimenetek a kért képarányokban
+    mozgo = [s for s in shots if s.get("tipus", "filmes") != "kep"]
+    if mozgo:
+        if not kimenetek:
+            hianyzik.append("a storyboard finish.kimenetek mezője üres, "
+                            "nem tudni, milyen képarányok kellenek")
+        for a in kimenetek:
+            fajl = f"{nev}_{a.replace(':', 'x')}.mp4"
+            forras = os.path.join(args.project, "output", fajl)
+            if os.path.exists(forras):
+                shutil.copyfile(forras, os.path.join(cel, fajl))
+                atmasolt.append(fajl)
+            else:
+                hianyzik.append(f"hiányzó vágás: output/{fajl} — "
+                                f"futtasd az assemble.py-t {a} képaránnyal")
+
+    # 2. képes tételek
+    for s in [x for x in shots if x.get("tipus") == "kep"]:
+        forras = s.get("keyframe") or f"shots/{s['id']}.png"
+        p = os.path.join(args.project, forras)
+        if os.path.exists(p):
+            cnev = f"{s['id']}{os.path.splitext(p)[1]}"
+            shutil.copyfile(p, os.path.join(cel, cnev))
+            atmasolt.append(cnev)
+        else:
+            hianyzik.append(f"hiányzó kép: {forras} ({s['id']})")
+
+    # 3. posztszöveg
+    poszt = os.path.join(cel, "poszt.md")
+    if not os.path.exists(poszt):
+        with open(poszt, "w", encoding="utf-8") as f:
+            f.write(POSZT_VAZ.format(nev=nev))
+        hianyzik.append("a poszt.md most készült el vázként, ki kell tölteni")
+    else:
+        tart = open(poszt, encoding="utf-8").read()
+        if "KITÖLTENDŐ" in tart:
+            db = tart.count("KITÖLTENDŐ")
+            hianyzik.append(f"a poszt.md még {db} kitöltetlen szakaszt tartalmaz")
+        if "AI" not in tart:
+            hianyzik.append("a poszt.md-ből hiányzik az AI-jelölés")
+
+    print(f"\n  Leszállítási csomag: {cel}")
+    for a in atmasolt:
+        print(f"    {a}")
+    if not atmasolt:
+        print("    (még nincs átmásolható fájl)")
+    if hianyzik:
+        print(f"\n  Hiányzik {len(hianyzik)} dolog:", file=sys.stderr)
+        for h in hianyzik:
+            print(f"    - {h}", file=sys.stderr)
+        print(file=sys.stderr)
+        sys.exit(1)
+    print("\n  A csomag teljes. Mehet a végső ellenőrzés "
+          "(references/vegso-ellenorzes.md), utána átadható.\n")
 
 
 def cmd_set_tool(args):
@@ -1001,6 +1107,7 @@ def main():
     sub.add_parser("check-assembly").set_defaults(f=cmd_check_assembly)
 
     sub.add_parser("package", help="gyártási csomag generálás nélkül").set_defaults(f=cmd_package)
+    sub.add_parser("delivery", help="leszállítási csomag összeállítása").set_defaults(f=cmd_delivery)
 
     for name, fn in (("approve", cmd_approve), ("pending", cmd_pending)):
         s = sub.add_parser(name); s.add_argument("node"); s.set_defaults(f=fn)

@@ -36,7 +36,7 @@ A gépszintű beállítások és az ügyfélprofilok a felhasználó könyvtár�
 Ez a mappa csak a tudást tartalmazza. A konkrét munkák a `project.py init <nev>`
 paranccsal a saját munkakönyvtáradban keletkeznek (`brief.md`, `treatment.md`,
 `storyboard.json`, `project.json`, valamint `characters/`, `shots/`, `output/`,
-`delivery/` mappák).
+`delivery/` mappák). A `delivery/` a leszállítható csomag: kész fájlok és posztszöveg.
 
 ## A scriptek elérése
 

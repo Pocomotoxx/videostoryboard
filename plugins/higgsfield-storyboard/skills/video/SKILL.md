@@ -288,6 +288,20 @@ Két dolgot emelj ki magadnak. Az **első sor önmagában is működjön**, mert
 
 A szöveg ugyanabból a briefből nő ki, mint maga a videó. Ne utólag aggasd rá, és ne ígérj benne olyat, amit az anyag nem mutat meg.
 
+### A leszállítási csomag összeállítása
+
+Amikor minden elkészült, állítsd össze a csomagot:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" delivery
+```
+
+Ez egy helyre gyűjti a kért képarányú vágásokat és a képeket, vázat készít a posztszöveghez, és **felsorolja, mi hiányzik még** — hiányzó képarány, meg nem generált kép, kitöltetlen szövegrész, hiányzó AI-jelölés. Amíg hiányzik valami, nem nulla kóddal tér vissza.
+
+A posztszöveget te írod meg a vázba, a `${CLAUDE_PLUGIN_ROOT}/references/poszt-szoveg.md` szerint — a script csak összeszedi és ellenőrzi, nem ír helyetted.
+
+Futtasd le újra, amíg tisztán le nem fut. Utána jön a végső ellenőrzés.
+
 ### Végső ellenőrzés leszállítás előtt
 
 A `finish` réteg után, még az átadás előtt menj végig a `${CLAUDE_PLUGIN_ROOT}/references/vegso-ellenorzes.md` hét pontján. Ez nem ugyanaz, mint a rétegek jóváhagyása: ott jelenetenként néztétek, itt a **kész egészet** kell megnézni, és összevetni az eredeti briefel.
