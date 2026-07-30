@@ -1,7 +1,7 @@
 ---
 name: video
 user-invocable: true
-description: Rétegelt, jóváhagyáskapus AI-videógyártás Higgsfield MCP-vel, brieftől a kész vágásig. Használd ezt a skillt, amikor a felhasználó AI-videót, reklámfilmet, storyboardot, jelenetlistát, promptsorozatot, hirdetési kreatívot vagy ügyfélnek szánt mozgóképet készít vagy tervez. Akkor is alkalmazd, ha csak annyit mond, hogy "csináljunk egy videót ebből", "kellene egy spot", "bontsuk jelenetekre", "generáljunk hozzá képeket", vagy ha Higgsfieldet, Klinget, Veo-t, Seedance-t, Sora-t említ. Mindig ezen a folyamaton keresztül dolgozz, soha ne generálj videót ad hoc módon.
+description: Rétegelt, jóváhagyáskapus AI-videó- és képgyártás Higgsfield MCP-vel, brieftől a kész anyagig. Használd ezt a skillt, amikor a felhasználó AI-videót, reklámfilmet, storyboardot, jelenetlistát, promptsorozatot, hirdetési kreatívot, ügyfélnek szánt mozgóképet, közösségimédia-posztot vagy képes karusszelt készít vagy tervez. Akkor is alkalmazd, ha csak annyit mond, hogy "csináljunk egy videót ebből", "kellene egy spot", "bontsuk jelenetekre", "generáljunk hozzá képeket", vagy ha Higgsfieldet, Klinget, Veo-t, Seedance-t, Sora-t említ. Mindig ezen a folyamaton keresztül dolgozz, soha ne generálj videót ad hoc módon.
 ---
 
 # Higgsfield storyboard futószalag
@@ -196,9 +196,9 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" check-shots
 
 Ez kiszűri a túl hosszú klipeket, a hiányzó promptot és a reklámjelenetek formátumhibáit. Olcsóbb itt megtalálni őket, mint egy visszautasított generálás árán.
 
-### Kétféle jelenet: filmes és reklám
+### Háromféle tétel: filmes, reklám, kép
 
-A jelenetek `tipus` mezője kétféle lehet.
+A tételek `tipus` mezője háromféle lehet.
 
 A **filmes** jelenet az alapértelmezés: generált kezdőkockából készül mozgókép, szabad prompttal. Ez való többjelenetes történethez, visszatérő szereplőkkel.
 
@@ -206,7 +206,11 @@ A **reklám** jelenet a Marketing Studio ága: feltöltött termékkép, egy ava
 
 **Ha a feladat reklám, a `${CLAUDE_PLUGIN_ROOT}/references/reklam-marketing-studio.md` fájlt kötelező elolvasni**, mielőtt jelenetlistát írsz. Más korlátok érvényesek rá: legfeljebb 15 másodperc, pontosan egy avatár, kötelező termékkép, egy helyszín, zárt listás hook. És ami a költségkapunk szempontjából a legfontosabb: **erre az ágra a platform nem ad előzetes árbecslést**, a költség csak utólag olvasható ki. Ezt mondd meg a felhasználónak, mielőtt elindítja az elsőt.
 
-A két típust ne keverd egy jeleneten belül. Egy projektben viszont megférnek egymás mellett.
+A **kép** tétel nem videó: álló kép közösségimédia-poszthoz, karusszelhez vagy hirdetéshez. Itt a kezdőkocka maga a végtermék, nem készül belőle mozgókép, és tisztán képes munkánál az összefűzés meg a hang réteg meg sem jelenik. Részletek: `${CLAUDE_PLUGIN_ROOT}/references/kep-poszt.md`.
+
+**A kép nagyságrenddel olcsóbb a videónál.** Ha a felhasználó rendszeres, napi jelenlétet szeretne, a kép a járható út, a videó a kiemelt tartalomé. Ha valaki napi videót emleget korlátos kerettel, ezt mondd el neki, mielőtt belevágtok.
+
+A típusokat ne keverd egy tételen belül. Egy projektben viszont megférnek egymás mellett — például egy videó és a hozzá tartozó karusszel.
 
 ### Visszatérő ügyfél: profil
 

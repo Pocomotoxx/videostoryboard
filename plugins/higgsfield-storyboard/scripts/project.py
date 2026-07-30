@@ -183,6 +183,10 @@ def sync(root, state):
 
     shots = board.get("shots", [])
     shot_ids = [s["id"] for s in shots]
+    # A képes poszt tételeiből nem lesz mozgókép: ott a kezdőkocka maga a
+    # végtermék, nem egy közbülső lépés.
+    mozgo_ids = [s["id"] for s in shots if s.get("tipus", "filmes") != "kep"]
+    kep_ids = [s["id"] for s in shots if s.get("tipus") == "kep"]
 
     for s in shots:
         kf = f"keyframe:{s['id']}"
@@ -191,7 +195,10 @@ def sync(root, state):
         if s.get("continuity_from"):
             deps_kf.append(f"keyframe:{s['continuity_from']}")
         nodes.setdefault(kf, new_node(4, deps_kf))["deps"] = deps_kf
-        nodes.setdefault(mo, new_node(5, [kf]))["deps"] = [kf]
+        if s.get("tipus") == "kep":
+            nodes.pop(mo, None)
+        else:
+            nodes.setdefault(mo, new_node(5, [kf]))["deps"] = [kf]
 
     # elhagyott jelenetek node-jainak takarítása
     for key in list(nodes):
@@ -200,9 +207,15 @@ def sync(root, state):
             if sid not in shot_ids:
                 del nodes[key]
 
-    nodes["assembly"]["deps"] = [f"motion:{i}" for i in shot_ids]
-    nodes["sound"]["deps"] = ["assembly"]
-    nodes["finish"]["deps"] = ["sound"]
+    if mozgo_ids:
+        nodes["assembly"]["deps"] = [f"motion:{i}" for i in mozgo_ids]
+        nodes["sound"]["deps"] = ["assembly"]
+        nodes["finish"]["deps"] = ["sound"] + [f"keyframe:{i}" for i in kep_ids]
+    else:
+        # Tisztán képes poszt: nincs mit összefűzni és nincs mit hangosítani.
+        nodes.pop("assembly", None)
+        nodes.pop("sound", None)
+        nodes["finish"]["deps"] = [f"keyframe:{i}" for i in kep_ids]
 
     # saját ujjlenyomatok
     spec = {
@@ -552,12 +565,17 @@ def cmd_estimate(args):
     shots = board.get("shots", [])
     filmes = [s for s in shots if s.get("tipus", "filmes") == "filmes"]
     reklam = [s for s in shots if s.get("tipus") == "reklam"]
+    kepek = [s for s in shots if s.get("tipus") == "kep"]
     chars = len(board.get("look", {}).get("characters", []))
-    img = len(filmes) * c["image"]
+    # A képes tételnél a kép maga a végtermék, mozgókép nem készül belőle.
+    img = (len(filmes) + len(kepek)) * c["image"]
     vid = sum(s.get("duration_s", 5) for s in filmes) * c["video_per_second"]
     train = chars * c["character_train"]
     spent = sum(n["spend"] for n in state["nodes"].values())
-    print(f"\n  Jelenet: {len(shots)} db, összhossz {sum(s.get('duration_s', 5) for s in shots)} mp")
+    mozgohossz = sum(s.get("duration_s", 5) for s in filmes + reklam)
+    reszek = [f"{len(filmes)} filmes", f"{len(reklam)} reklám", f"{len(kepek)} kép"]
+    print(f"\n  Tétel: {len(shots)} db ({', '.join(reszek)}), "
+          f"mozgókép összhossz {mozgohossz} mp")
     print(f"  Karaktertanítás   {train:>6} kredit")
     print(f"  Kezdőkockák       {img:>6} kredit")
     print(f"  Mozgókép          {vid:>6} kredit")
@@ -851,8 +869,19 @@ def cmd_check_shots(args):
         tipus = s.get("tipus", "filmes")
         hossz = s.get("duration_s", 5)
 
-        if tipus not in ("filmes", "reklam"):
-            hibak.append(f"{sid}: ismeretlen tipus '{tipus}' (filmes vagy reklam)")
+        if tipus not in ("filmes", "reklam", "kep"):
+            hibak.append(f"{sid}: ismeretlen tipus '{tipus}' (filmes, reklam vagy kep)")
+            continue
+
+        if tipus == "kep":
+            if not s.get("prompt_en"):
+                hibak.append(f"{sid}: hiányzik a prompt_en")
+            if not s.get("aspect"):
+                megjegyzesek.append(f"{sid}: nincs megadva képarány, a platform "
+                                    f"alapértéke lesz")
+            if s.get("camera_move") or s.get("duration_s"):
+                megjegyzesek.append(f"{sid}: képnél a kameramozgás és a hossz "
+                                    f"értelmezhetetlen, elhagyható")
             continue
 
         if tipus == "filmes":
@@ -897,9 +926,11 @@ def cmd_check_shots(args):
         for h in hibak:
             print(f"  HIBA: {h}", file=sys.stderr)
         sys.exit(1)
-    ad = sum(1 for s in shots if s.get("tipus") == "filmes" or "tipus" not in s)
-    print(f"\n  A jelenetlista rendben: {len(shots)} jelenet "
-          f"({ad} filmes, {len(shots) - ad} reklám).\n")
+    szam = {"filmes": 0, "reklam": 0, "kep": 0}
+    for s in shots:
+        szam[s.get("tipus", "filmes")] += 1
+    print(f"\n  A lista rendben: {len(shots)} tétel "
+          f"({szam['filmes']} filmes, {szam['reklam']} reklám, {szam['kep']} kép).\n")
 
 
 def cmd_check_assembly(args):

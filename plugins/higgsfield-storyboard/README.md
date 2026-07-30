@@ -23,6 +23,7 @@ references/prompt-iras.md           # promptszerkezet, hossz, tipikus félreért
 references/hibamintak.md            # mi szokott elromlani és hogyan javítsd
 references/nyitohook.md             # a nyitó két másodperc közösségi médiához
 references/reklam-marketing-studio.md  # avatáros és termékreklám, korlátokkal
+references/kep-poszt.md             # képes poszt, karusszel, szöveg a képen
 references/zene-es-ritmus.md        # vágásritmus, ütemre illesztés
 references/vegso-ellenorzes.md      # hétpontos ellenőrzés leszállítás előtt
 templates/storyboard.example.json   # a storyboard.json szerkezete, kitöltött mintával

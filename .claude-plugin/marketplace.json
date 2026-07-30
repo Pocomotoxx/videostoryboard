@@ -10,7 +10,7 @@
     {
       "name": "higgsfield-storyboard",
       "source": "./plugins/higgsfield-storyboard",
-      "description": "Rétegelt, jóváhagyáskapus AI-videógyártás Higgsfield MCP-vel, brieftől a kész vágásig."
+      "description": "Rétegelt, jóváhagyáskapus AI-videó- és képgyártás Higgsfield MCP-vel, brieftől a kész anyagig."
     }
   ]
 }
