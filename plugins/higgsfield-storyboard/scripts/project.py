@@ -166,6 +166,13 @@ def new_node(layer, deps):
         "note": "",
         "spend": 0,
         "assets": [],
+        # Aszinkron generálás: a beküldés és az eredmény begyűjtése szét van
+        # választva, ezért egy megszakadt munkamenet folytatható. A request_hash
+        # rögzíti, milyen állapotból küldtük be — ha a jelenet azóta változott,
+        # az érkező eredmény már egy korábbi változathoz tartozik.
+        "request_id": "",
+        "request_hash": "",
+        "requested_at": "",
     }
 
 
@@ -430,8 +437,17 @@ def cmd_status(args):
         n = nodes[key]
         note = f"  <- {n['note']}" if n["note"] and e in ("rejected", "stale") else ""
         cost = f"  [{n['spend']} kredit]" if n["spend"] else ""
-        print(f"  {n['layer']}  {MARK[e]:<11} {key}{cost}{note}")
+        futo = fut_kereses(state, key)
+        jel = ""
+        if futo:
+            jel = f"  BEKÜLDVE {futo['ota']}"
+            if futo["elavult"]:
+                jel += " (a jelenet azóta változott)"
+        print(f"  {n['layer']}  {MARK[e]:<11} {key}{cost}{jel}{note}")
     total = sum(n["spend"] for n in nodes.values())
+    varakozo = [k for k in nodes if fut_kereses(state, k)]
+    if varakozo:
+        print(f"\n  {len(varakozo)} beküldött kérés eredménye még nem érkezett meg.")
     print(f"\n  Elköltött kredit összesen: {total}\n")
 
 
@@ -497,6 +513,15 @@ def cmd_can_spend(args):
     if bad:
         print(f"TILOS a generálás. Jóváhagyatlan vagy elévült előzmény: {', '.join(bad)}",
               file=sys.stderr)
+        sys.exit(1)
+
+    # Kétszeres beküldés elleni védelem: ha már fut egy kérés erre a node-ra,
+    # az újabb beküldés még egyszer elköltené ugyanazt.
+    futo = fut_kereses(state, args.node)
+    if futo:
+        print(f"TILOS. Erre már fut egy kérés ({futo['request_id']}, beküldve "
+              f"{futo['ota']}). Előbb gyűjtsd be az eredményt. Ha a kérés elveszett: "
+              f"set-asset {args.node} --clear-request", file=sys.stderr)
         sys.exit(1)
 
     # Automata futásnál a jóváhagyott előzmény nem elég: kell a kreditplafon is.
@@ -1106,6 +1131,88 @@ def cmd_delivery(args):
           "(references/vegso-ellenorzes.md), utána átadható.\n")
 
 
+def fut_kereses(state, key):
+    """Van-e beküldött, még be nem gyűjtött kérés, és friss-e még."""
+    n = state["nodes"][key]
+    if not n.get("request_id") or n["assets"]:
+        return None
+    elavult = bool(n.get("request_hash")) and n["request_hash"] != n["input_hash"]
+    return {"request_id": n["request_id"], "elavult": elavult,
+            "ota": n.get("requested_at", "")}
+
+
+def cmd_set_asset(args):
+    """Kérésazonosító vagy elkészült fájl rögzítése egy node-hoz.
+
+    A generáló réteg ezzel jelzi vissza, mit küldött be és mi érkezett meg.
+    A kérés beküldésekor eltesszük az akkori ujjlenyomatot is, hogy később
+    kiderüljön, ha az eredmény már egy meghaladott változathoz tartozik.
+    """
+    state = sync(args.project, load(args.project))
+    n = state["nodes"].get(args.node) or die(f"nincs ilyen node: {args.node}")
+
+    if args.clear_request:
+        n["request_id"] = n["request_hash"] = n["requested_at"] = ""
+        save(args.project, state)
+        print(f"Kérés törölve: {args.node}. Újra beküldhető.")
+        return
+
+    if args.request_id:
+        if n.get("request_id") and not n["assets"]:
+            die(f"{args.node}: már fut egy kérés ({n['request_id']}). Előbb gyűjtsd be, "
+                f"vagy töröld: set-asset {args.node} --clear-request")
+        n["request_id"] = args.request_id
+        n["request_hash"] = n["input_hash"]
+        n["requested_at"] = time.strftime("%Y-%m-%d %H:%M")
+        print(f"Beküldve: {args.node}  kérés={args.request_id}")
+
+    if args.file:
+        if args.file not in n["assets"]:
+            n["assets"].append(args.file)
+        print(f"Fájl rögzítve: {args.node} -> {args.file}")
+        if n.get("request_hash") and n["request_hash"] != n["input_hash"]:
+            print("FIGYELEM: a jelenet a beküldés óta megváltozott, ez az eredmény "
+                  "egy korábbi változathoz tartozik. Nézd meg, mielőtt jóváhagyod.")
+
+    if not (args.request_id or args.file):
+        die("adj meg --request-id vagy --file értéket")
+    save(args.project, state)
+
+
+def cmd_get(args):
+    """Egy node mezőjének kiírása, szkriptelhető formában."""
+    state = sync(args.project, load(args.project))
+    save(args.project, state)
+    n = state["nodes"].get(args.node) or die(f"nincs ilyen node: {args.node}")
+    if args.field == "effective":
+        print(effective(state, args.node))
+        return
+    v = n.get(args.field, "")
+    print(json.dumps(v, ensure_ascii=False) if isinstance(v, (list, dict)) else v)
+
+
+def cmd_list_nodes(args):
+    """Node-ok listája JSON-ben, szűrhetően. Szkripteknek és külső felületnek."""
+    state = sync(args.project, load(args.project))
+    save(args.project, state)
+    nodes = state["nodes"]
+    out = []
+    for k in sorted(nodes, key=lambda k: (nodes[k]["layer"], k)):
+        if args.prefix and not k.startswith(args.prefix):
+            continue
+        e = effective(state, k)
+        if args.state and e != args.state:
+            continue
+        futo = fut_kereses(state, k)
+        out.append({
+            "node": k, "layer": nodes[k]["layer"], "state": e,
+            "request_id": nodes[k].get("request_id", ""),
+            "request_stale": bool(futo and futo["elavult"]),
+            "assets": nodes[k]["assets"], "note": nodes[k]["note"],
+        })
+    print(json.dumps(out, ensure_ascii=False))
+
+
 def cmd_set_tool(args):
     state = load(args.project)
     if args.role not in state["tools"]:
@@ -1279,6 +1386,22 @@ def main():
 
     s = sub.add_parser("set-tool"); s.add_argument("role"); s.add_argument("tool")
     s.set_defaults(f=cmd_set_tool)
+
+    s = sub.add_parser("set-asset", help="kérésazonosító vagy elkészült fájl rögzítése")
+    s.add_argument("node")
+    s.add_argument("--request-id", dest="request_id", help="a beküldött kérés azonosítója")
+    s.add_argument("--file", help="a letöltött fájl útvonala a projekten belül")
+    s.add_argument("--clear-request", action="store_true",
+                   help="elveszett kérés törlése, hogy újra beküldhető legyen")
+    s.set_defaults(f=cmd_set_asset)
+
+    s = sub.add_parser("get", help="egy node mezőjének kiírása")
+    s.add_argument("node"); s.add_argument("field")
+    s.set_defaults(f=cmd_get)
+
+    s = sub.add_parser("list", help="node-ok listája JSON-ben")
+    s.add_argument("--prefix", default=""); s.add_argument("--state", default="")
+    s.set_defaults(f=cmd_list_nodes)
 
     cfg = sub.add_parser("config", help="gépszintű telepítési adatok")
     cfgsub = cfg.add_subparsers(dest="cfgcmd", required=True)

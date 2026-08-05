@@ -155,6 +155,38 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" set-tool image_to_video "<esz
 
 Mindig a `next` mondja meg, mi jön. Egy réteg befejezése után **állj meg, és kérj jóváhagyást**. Ne haladj tovább magadtól, akkor sem, ha nyilvánvalónak tűnik a folytatás.
 
+### Beküldés és begyűjtés
+
+A generálás nem azonnali, a videó pedig percekig is tarthat. Ezért a beküldést és az eredmény begyűjtését **külön kell kezelni** — így egy megszakadt munkamenet folytatható, és nem vész el a már kifizetett munka.
+
+Amint beküldtél egy kérést, **rögzítsd az azonosítóját**:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" set-asset keyframe:s003 --request-id <azonosito>
+```
+
+Amikor megjött az eredmény és letöltötted, rögzítsd a fájlt is:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" set-asset keyframe:s003 --file shots/s003_start.png
+```
+
+Ettől három dolog működni kezd. A `status` kiírja, melyik kérés van még úton. A `can-spend` **megtagadja a második beküldést** ugyanarra a node-ra, tehát nem fizeted ki kétszer ugyanazt. És ha a jelenet a beküldés óta megváltozott, a rendszer szól, hogy az érkező eredmény már egy korábbi változathoz tartozik — ilyenkor nézd meg alaposan, mielőtt jóváhagynád.
+
+Ha egy kérés elveszett vagy a szolgáltatónál hibára futott, töröld, hogy újra beküldhető legyen:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" set-asset keyframe:s003 --clear-request
+```
+
+**Félbeszakadt munkamenet folytatásakor** a `status` megmondja, mi van még úton. Előbb azokat gyűjtsd be, és csak utána indíts újat.
+
+Külső felületnek — például egy jóváhagyó botnak — a `list` ad gépi listát:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" list --prefix keyframe: --state pending
+```
+
 ### Nézd meg te is, mielőtt megmutatod
 
 Az állóképeket `Read` hívással közvetlenül meg tudod nézni. A **mozgóképeket nem** — abból előbb képkockákat kell kimenteni:
