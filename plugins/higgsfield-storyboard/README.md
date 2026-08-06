@@ -14,6 +14,7 @@ scripts/project.py                  # rétegek állapotgépe, jóváhagyás-, k�
 scripts/assemble.py                 # helyi összefűzés ffmpeggel, felirat, hangerő
 scripts/frames.py                   # képkockák kimentése a kész klipek ellenőrzéséhez
 scripts/beatgrid.py                 # ütemre illesztett jelenethosszak
+scripts/bot.py                      # telefonos jóváhagyás Telegramon (nem generál)
 references/telepites.md             # MCP-bekötés, gépszintű adatok, csomagváltás
 references/shot-grammar.md          # gépállás, szög, kameramozgás, promptszerkezet
 references/continuity.md            # karakter- és stílusfolytonosság
@@ -28,6 +29,7 @@ references/poszt-szoveg.md          # kísérőszöveg, kulcsszavak, hashtagek
 references/napi-elokeszites.md      # témasor, felügyelet nélküli előkészítés
 references/zene-es-ritmus.md        # vágásritmus, ütemre illesztés
 references/vegso-ellenorzes.md      # hétpontos ellenőrzés leszállítás előtt
+references/telefonos-jovahagyas.md  # a bot működése és korlátai
 templates/storyboard.example.json   # a storyboard.json szerkezete, kitöltött mintával
 ```
 

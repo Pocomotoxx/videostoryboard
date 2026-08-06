@@ -201,6 +201,14 @@ A kimentett kockákat nézd végig `Read` hívással, és vesd össze a `${CLAUD
 
 Ez nem helyettesíti az emberi ellenőrzést. A folytonosságot, a márkahangot és azt, hogy az anyag jó-e az ügyfélnek, továbbra is ember dönti el.
 
+### Jóváhagyás telefonról
+
+Ha a felhasználó nem szeretne a gép előtt ülve képeket nézegetni, a `scripts/bot.py` kiküldi a váró anyagot Telegramra, és a döntést visszaírja a projektbe. **Opcionális** — ne tedd a munka feltételévé.
+
+A bot **nem generál semmit**, ezért nem tudja megkerülni a költségkaput, és nem kell hozzá Higgsfield-kulcs. A részletek: `${CLAUDE_PLUGIN_ROOT}/references/telefonos-jovahagyas.md`.
+
+A menet: legenerálod és letöltöd az anyagot, `pending` állapotba teszed, és a felhasználó a telefonján dönt. A döntés ugyanoda kerül, mintha a gépen hagyta volna jóvá.
+
 ### Hogyan kérj jóváhagyást
 
 Ne ömlesztve tedd le az egészet azzal, hogy „megfelel?". Vedd végig **jelenetenként, egyesével**, és minden jelenetnél ugyanazt az öt lehetőséget kínáld fel:
