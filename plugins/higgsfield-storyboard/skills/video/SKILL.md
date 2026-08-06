@@ -207,6 +207,29 @@ Ha a felhasználó nem szeretne a gép előtt ülve képeket nézegetni, a `scri
 
 A bot **nem generál semmit**, ezért nem tudja megkerülni a költségkaput, és nem kell hozzá Higgsfield-kulcs. A részletek: `${CLAUDE_PLUGIN_ROOT}/references/telefonos-jovahagyas.md`.
 
+**Ha a felhasználó bot-tokent és azonosítót ad**, ezekkel rögzítsd:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set telegram.token "<token>"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set telegram.owner "<szam>"
+```
+
+**A tokent soha ne írd vissza a beszélgetésbe**, se megerősítésként, se összefoglalóban. A `config show` sem írja ki az értékét, csak azt, hogy megvan-e. Ha a felhasználó nyilvános helyre is kitette volna, mondd meg neki, hogy a BotFatherben a `/revoke` paranccsal új tokent kérhet.
+
+Beállítás után mindig ellenőrizd, mielőtt indítanál:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/bot.py" --project . --onteszt
+```
+
+Az indítás **háttérben** történjen, mert a bot folyamatosan fut, és különben megállítaná a munkát:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/bot.py" --project .
+```
+
+Mondd meg a felhasználónak, hogy a bot addig él, amíg a gép ébren van és a munkamenet fut, és hogy leállításkor egyszerűen szólhat neked.
+
 A menet: legenerálod és letöltöd az anyagot, `pending` állapotba teszed, és a felhasználó a telefonján dönt. A döntés ugyanoda kerül, mintha a gépen hagyta volna jóvá.
 
 ### Hogyan kérj jóváhagyást

@@ -90,6 +90,29 @@ def tg(token, method, _fajl=None, _mezo="document", **params):
         return {"ok": False}
 
 
+def belepes():
+    """Token és azonosító: előbb a környezeti változó, aztán a mentett beállítás.
+
+    A környezeti változó azért az erősebb, hogy egy eseti indítás felülírhassa a
+    mentettet anélkül, hogy hozzányúlnánk a beállításokhoz.
+    """
+    token = os.getenv("TG_TOKEN", "")
+    owner = os.getenv("TG_OWNER", "")
+    if token and owner:
+        return token, owner, "környezeti változó"
+    cfg = os.path.join(os.path.expanduser("~"), ".higgsfield-storyboard", "config.json")
+    if os.path.exists(cfg):
+        try:
+            with open(cfg, encoding="utf-8") as f:
+                tg_cfg = json.load(f).get("telegram") or {}
+            token = token or tg_cfg.get("token", "")
+            owner = owner or str(tg_cfg.get("owner", "") or "")
+            return token, owner, "mentett beállítás"
+        except Exception as e:
+            print(f"a beállítás nem olvasható: {e}", file=sys.stderr)
+    return token, owner, "nincs"
+
+
 def pj(project, *args):
     """project.py hívása. A bot csak olvas és jóváhagy, generálni nem tud."""
     r = subprocess.run([sys.executable, PROJECT_PY, "--project", project, *args],
@@ -231,7 +254,7 @@ class Bot:
                     self.uzen(f"Hiba: {e}")
 
 
-def onteszt(project, token, owner):
+def onteszt(project, token, owner, honnan):
     """Indítás előtti ellenőrzés, a Telegram megszólítása nélkül."""
     baj = []
     print("\n  Ellenőrzés\n")
@@ -244,12 +267,17 @@ def onteszt(project, token, owner):
     if not os.path.exists(PROJECT_PY):
         baj.append("nincs meg a project.py a script mellett")
 
-    print(f"    TG_TOKEN         {'megvan' if token else 'HIÁNYZIK'}")
-    print(f"    TG_OWNER         {owner or 'HIÁNYZIK'}")
+    # A token értékét soha nem írjuk ki, csak azt, hogy megvan-e.
+    print(f"    token            {'megvan' if token else 'HIÁNYZIK'}  ({honnan})")
+    print(f"    azonosító        {owner or 'HIÁNYZIK'}")
     if not token:
-        baj.append("nincs TG_TOKEN")
+        baj.append("nincs bot-token. Beállítás: project.py config set telegram.token <token>")
     if not owner:
-        baj.append("nincs TG_OWNER")
+        baj.append("nincs azonosító. Beállítás: project.py config set telegram.owner <szam>")
+    if token and ":" not in token:
+        baj.append("a token alakja gyanús — a BotFathertől kapott teljes sort kell megadni")
+    if owner and not owner.isdigit():
+        baj.append("az azonosító csak számokból állhat")
 
     # A gombok szerkezetes mezője JSON-ként kell menjen, különben a Telegram
     # eldobja, és a jóváhagyó gombok nem jelennek meg.
@@ -279,17 +307,14 @@ def main():
                     help="beállítások ellenőrzése indítás nélkül")
     a = ap.parse_args()
 
-    token = os.getenv("TG_TOKEN", "")
-    owner = os.getenv("TG_OWNER", "")
+    token, owner, honnan = belepes()
 
     if a.onteszt:
-        onteszt(a.project, token, owner)
+        onteszt(a.project, token, owner, honnan)
         return
 
-    if not token:
-        sys.exit("nincs TG_TOKEN")
-    if not owner:
-        sys.exit("nincs TG_OWNER")
+    if not token or not owner:
+        sys.exit("nincs beállítva a bot. Futtasd: bot.py --project . --onteszt")
     if not os.path.exists(os.path.join(a.project, "project.json")):
         sys.exit(f"nincs projekt itt: {a.project}")
 

@@ -48,6 +48,21 @@ ha a jelenet a beküldés óta megváltozott.
 Visszadobásnál a bot rákérdez az indokra, és a következő üzenetet írja be indokként —
 kivéve, ha az egy parancs, mert a felhasználó meggondolhatta magát.
 
+## Beállítás
+
+A token és az azonosító a gépszintű beállításban tárolódik, tehát egyszer kell megadni:
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set telegram.token "<token>"
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/project.py" config set telegram.owner "<szam>"
+```
+
+**A token értékét soha ne írd vissza a beszélgetésbe.** A `config show` sem írja ki, csak
+azt, hogy megvan-e. A beállításfájl jogosultsága mentéskor a tulajdonosra szűkül.
+
+Környezeti változóval is megadható (`TG_TOKEN`, `TG_OWNER`), és az erősebb a mentettnél —
+így egy eseti indítás felülírhatja anélkül, hogy a beállításhoz hozzányúlnánk.
+
 ## Indítás
 
 Előbb ellenőrzés, a Telegram megszólítása nélkül:

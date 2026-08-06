@@ -111,6 +111,8 @@ def load_config():
     c.setdefault("tools", {})
     c.setdefault("models", {})
     c.setdefault("cli", None)          # "van" | "nincs" — felderítéssel, nem kérdezéssel
+    # Telefonos jóváhagyás. Nem kötelező, ezért nincs a hiánylistán.
+    c.setdefault("telegram", {})
     return c
 
 
@@ -118,6 +120,12 @@ def save_config(c):
     os.makedirs(CONFIG_DIR, exist_ok=True)
     with open(CONFIG, "w", encoding="utf-8") as f:
         json.dump(c, f, ensure_ascii=False, indent=2)
+    # A fájlban Telegram-token is lehet, ezért csak a tulajdonos olvashassa.
+    # Windowson ennek nincs hatása, ott a felhasználói profil véd.
+    try:
+        os.chmod(CONFIG, 0o600)
+    except OSError:
+        pass
 
 
 def missing_config(c):
@@ -294,6 +302,11 @@ def cmd_config_show(args):
     for r in MODEL_ROLES:
         kell = "" if r != "tts" else "  (csak narrációhoz)"
         print(f"    {r:<20} {(c['models'].get(r) or 'HIÁNYZIK') + kell}")
+    tg = c.get("telegram") or {}
+    # A token értékét nem írjuk ki, csak azt, hogy megvan-e.
+    print(f"\n  Telefonos jóváhagyás (nem kötelező)")
+    print(f"    token                {'beállítva' if tg.get('token') else 'nincs'}")
+    print(f"    azonosító            {tg.get('owner') or 'nincs'}")
     print("\n  MCP-eszközök")
     for r in TOOL_ROLES:
         print(f"    {r:<20} {c['tools'].get(r) or 'HIÁNYZIK'}")
@@ -326,6 +339,17 @@ def cmd_config_set(args):
         if r not in TOOL_ROLES:
             die(f"ismeretlen szerepkör: {r}. Lehetséges: {', '.join(TOOL_ROLES)}")
         c["tools"][r] = val
+    elif key.startswith("telegram."):
+        k = key.split(".", 1)[1]
+        if k not in ("token", "owner"):
+            die(f"ismeretlen telegram-kulcs: {k}. Lehetséges: token, owner")
+        c.setdefault("telegram", {})[k] = val
+        # A tokent soha ne írjuk vissza a képernyőre.
+        save_config(c)
+        print(f"telegram.{k} beállítva.")
+        if not (c["telegram"].get("token") and c["telegram"].get("owner")):
+            print("Még hiányzik a másik érték.")
+        return
     elif key.startswith("elokeszites."):
         k = key.split(".", 1)[1]
         c.setdefault("elokeszites", {})
